@@ -1,0 +1,10 @@
+{
+  "name": "Mölkky Companion",
+  "short_name": "Mölkky",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f6f8",
+  "theme_color": "#111827",
+  "lang": "cs",
+  "description": "Offline počítadlo skóre a statistiky pro Mölkky."
+}

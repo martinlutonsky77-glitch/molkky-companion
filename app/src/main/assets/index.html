@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <title>Mölkky Companion</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">MÖLKKY</div>
+        <h1>Companion</h1>
+      </div>
+      <div class="top-actions"><button id="checkUpdateBtn" class="ghost">Aktualizace</button><button id="navStats" class="ghost">Statistiky</button></div>
+    </header>
+
+    <main>
+      <section id="homeView" class="view active">
+        <div class="card hero">
+          <div>
+            <div class="eyebrow">RYCHLÁ HRA</div>
+            <h2>Hoď. Klikni. Hraj dál.</h2>
+            <p>Bez účtu. Offline. Data zůstávají v telefonu.</p>
+          </div>
+          <div class="hero-actions">
+            <button id="newGameBtn" class="primary big">Nová hra</button>
+            <button id="tournamentNightBtn" class="secondary big">Turnajová noc</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-head">
+            <h3>Hráči</h3>
+            <button id="addPlayerBtn" class="ghost">+ Přidat</button>
+          </div>
+          <div id="playerList" class="player-list"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-head">
+            <h3>Poslední hry</h3>
+            <button id="clearHistoryBtn" class="ghost danger-text">Smazat historii</button>
+          </div>
+          <div id="historyList" class="history-list"></div>
+        </div>
+      </section>
+
+      <section id="setupView" class="view">
+        <div class="section-head">
+          <button class="ghost back-home">← Zpět</button>
+          <h2>Nová hra</h2>
+        </div>
+
+        <div class="card">
+          <div class="section-head">
+            <h3 id="setupTitle">Vyber hráče</h3>
+            <span id="setupModeTag" class="tag">Jedna hra</span>
+          </div>
+          <p class="muted">Vybraní hráči hrají v pořadí shora dolů. Přetáhni je za ☰ nebo použij šipky.</p>
+          <div id="orderedPlayers" class="ordered-players"></div>
+          <div class="order-actions">
+            <button id="sameOrderBtn" class="secondary">Stejné</button>
+            <button id="reverseOrderBtn" class="secondary">Obrátit</button>
+            <button id="randomOrderBtn" class="secondary">Náhodně</button>
+          </div>
+          <h4>Další hráči</h4>
+          <div id="setupPlayers" class="setup-players"></div>
+          <button id="addPlayerSetupBtn" class="secondary">+ Nový hráč</button>
+        </div>
+
+        <div class="card compact">
+          <label class="toggle-row">
+            <span>
+              <strong>3 minutí = vyřazení</strong>
+              <small>Oficiální pravidlo pro tři po sobě jdoucí hody bez bodu.</small>
+            </span>
+            <input id="threeMissRule" type="checkbox" checked>
+          </label>
+        </div>
+
+        <button id="startGameBtn" class="primary big full">Spustit hru</button>
+      </section>
+
+      <section id="gameView" class="view">
+        <div class="game-top">
+          <button id="quitGameBtn" class="ghost">Ukončit</button>
+          <div id="gameRound" class="pill">Kolo 1</div>
+          <button id="undoBtn" class="ghost">↶ Undo</button>
+        </div>
+
+        <div class="score-card">
+          <div class="turn-label">NA TAHU</div>
+          <div id="currentPlayerName" class="current-name">—</div>
+          <div class="score-line">
+            <span id="currentScore">0</span>
+            <small>/ 50</small>
+          </div>
+          <div id="targetHint" class="target-hint">Potřebuješ 50 bodů</div>
+          <div id="missesHint" class="misses-hint">Minutí: 0/3</div>
+        </div>
+
+        <div class="card">
+          <div class="entry-tabs">
+            <button id="pinsModeBtn" class="mode-btn active">Kuželky</button>
+            <button id="pointsModeBtn" class="mode-btn">Body</button>
+          </div>
+
+          <div id="pinsEntry">
+            <div class="section-head">
+              <h3>Co spadlo?</h3>
+              <span id="selectionSummary" class="muted">Nic</span>
+            </div>
+            <div id="pinsGrid" class="pins-grid"></div>
+          </div>
+
+          <div id="pointsEntry" class="hidden">
+            <div class="section-head"><h3>Kolik bodů?</h3><span class="muted">0–12</span></div>
+            <div id="pointsGrid" class="points-grid"></div>
+          </div>
+
+          <div class="throw-actions">
+            <button id="missBtn" class="secondary">Minutí</button>
+            <button id="confirmThrowBtn" class="primary">Zapsat hod</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Pořadí</h3>
+          <div id="liveStandings" class="standings"></div>
+        </div>
+      </section>
+
+      <section id="statsView" class="view">
+        <div class="section-head">
+          <button class="ghost back-home">← Zpět</button>
+          <h2>Statistiky</h2>
+        </div>
+        <div id="statsContent"></div>
+      </section>
+
+      <section id="gameOverView" class="view">
+        <div class="card hero center">
+          <div class="eyebrow">VÍTĚZ</div>
+          <h2 id="winnerName">—</h2>
+          <p id="winnerSummary">—</p>
+          <button id="rematchBtn" class="primary big">Odveta</button>
+          <button id="nextTournamentGameBtn" class="primary big hidden">Další hra večera</button>
+          <button id="endTournamentBtn" class="secondary hidden">Ukončit turnajovou noc</button>
+          <button class="secondary back-home">Domů</button>
+        </div>
+        <div class="card">
+          <h3>Výsledek</h3>
+          <div id="finalStandings" class="standings"></div>
+        </div>
+        <div id="tournamentSummaryCard" class="card hidden">
+          <div class="section-head"><h3>Turnajová noc</h3><span id="nightGameCount" class="tag"></span></div>
+          <div id="nightStandings" class="standings"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="playerDialog">
+    <form method="dialog" id="playerForm">
+      <h3>Nový hráč</h3>
+      <input id="playerNameInput" maxlength="20" placeholder="Jméno hráče" autocomplete="off" required />
+      <div class="dialog-actions">
+        <button value="cancel" class="secondary">Zrušit</button>
+        <button id="savePlayerBtn" value="default" class="primary">Uložit</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+  <dialog id="updateDialog"><form method="dialog" id="updateForm"><h3>Aktualizace aplikace</h3><p id="updateMessage">Kontroluji novou verzi…</p><div class="dialog-actions"><button value="cancel" class="secondary">Zavřít</button><button id="downloadUpdateBtn" type="button" class="primary hidden">Stáhnout APK</button></div></form></dialog>
+</body>
+</html>
