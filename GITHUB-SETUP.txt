@@ -1,17 +1,26 @@
-MÖLKKY COMPANION – GITHUB AUTO-BUILD / UPDATE
+MÖLKKY COMPANION – GITHUB AUTO-BUILD
 
-1. Založ repo molkky-companion. Pro veřejné stahování použij public repo.
-2. Nahraj GitHub-ready obsah. Keystore a signing.properties se NESMÍ commitnout.
-3. GitHub -> Settings -> Secrets and variables -> Actions. Přidej:
-   MOLKKY_KEYSTORE_BASE64
-   MOLKKY_STORE_PASSWORD
-   MOLKKY_KEY_ALIAS
-   MOLKKY_KEY_PASSWORD
-4. Base64 keystore na Windows PowerShell:
-   [Convert]::ToBase64String([IO.File]::ReadAllBytes("molkky-update-key.jks"))
-5. V app/src/main/assets/app.js změň UPDATE_CONFIG.owner na svůj GitHub login.
-6. Nová verze: zvýšit versionCode, versionName a currentVersion, commitnout a vytvořit tag např. v1.5.0.
-7. GitHub Actions automaticky vytvoří podepsané APK a GitHub Release.
-8. V aplikaci tlačítko Aktualizace zkontroluje latest release a nabídne APK.
+Repo: martinlutonsky77-glitch/molkky-companion
 
-Android musí instalaci aktualizace vždy potvrdit; mimo Play Store nelze update potichu nainstalovat.
+Do GitHub repozitáře patří pouze obsah GITHUB-READY balíčku.
+Podpisový klíč a hesla jsou pouze v SECURE balíčku.
+
+V GitHubu otevři:
+Settings -> Secrets and variables -> Actions -> New repository secret
+
+Vytvoř 4 repository secrets:
+MOLKKY_KEYSTORE_BASE64
+MOLKKY_STORE_PASSWORD
+MOLKKY_KEY_ALIAS
+MOLKKY_KEY_PASSWORD
+
+Přesné hodnoty jsou v SECURE balíčku v souboru GITHUB-SECRETS-VALUES.txt.
+
+Workflow .github/workflows/release-apk.yml klíč při buildu obnoví pouze do dočasného GitHub runneru a vytvoří podepsané APK.
+
+Nové vydání:
+1. zvýšit versionCode
+2. zvýšit versionName a currentVersion
+3. commitnout změny
+4. vytvořit tag např. v1.5.0
+5. GitHub Actions vytvoří APK a GitHub Release
