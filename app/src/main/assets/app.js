@@ -1,5 +1,5 @@
 const UPDATE_CONFIG = {
-  owner: "DOPLN_GITHUB_UZIVATELE",
+  owner: "martinlutonsky77-glitch",
   repo: "molkky-companion",
   currentVersion: "1.4.0"
 };
