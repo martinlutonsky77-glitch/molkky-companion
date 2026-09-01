@@ -1,1 +1,64 @@
+name: Build and Release APK
 
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Restore signing key
+        run: |
+          echo "${{ secrets.MOLKKY_KEYSTORE_BASE64 }}" | base64 --decode > molkky-update-key.jks
+
+          cat > signing.properties <<EOF
+          storeFile=../molkky-update-key.jks
+          storePassword=${{ secrets.MOLKKY_STORE_PASSWORD }}
+          keyAlias=${{ secrets.MOLKKY_KEY_ALIAS }}
+          keyPassword=${{ secrets.MOLKKY_KEY_PASSWORD }}
+          EOF
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.10.2"
+
+      - name: Build signed APK
+        run: gradle :app:assembleRelease
+
+      - name: Prepare APK
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          cp app/build/outputs/apk/release/app-release.apk "Molkky-Companion-${VERSION}.apk"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Molkky-Companion-APK
+          path: Molkky-Companion-*.apk
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Molkky-Companion-*.apk
+          generate_release_notes: true
