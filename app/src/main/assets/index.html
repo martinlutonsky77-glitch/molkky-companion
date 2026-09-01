@@ -15,7 +15,13 @@
         <div class="eyebrow">MÖLKKY</div>
         <h1>Companion</h1>
       </div>
-      <div class="top-actions"><button id="checkUpdateBtn" class="ghost">Aktualizace</button><button id="navStats" class="ghost">Statistiky</button></div>
+      <div class="top-actions">
+        <button id="themeToggleBtn" class="icon-btn theme-toggle" type="button" aria-label="Přepnout světlý/tmavý vzhled" title="Přepnout vzhled">
+          <span id="themeToggleIcon" aria-hidden="true">☾</span>
+        </button>
+        <button id="checkUpdateBtn" class="ghost">Aktualizace</button>
+        <button id="navStats" class="ghost">Statistiky</button>
+      </div>
     </header>
 
     <main>
@@ -95,6 +101,7 @@
         <div class="score-card">
           <div class="turn-label">NA TAHU</div>
           <div id="currentPlayerName" class="current-name">—</div>
+          <div id="currentPlayerBadge" class="current-player-badge" aria-hidden="true"></div>
           <div class="score-line">
             <span id="currentScore">0</span>
             <small>/ 50</small>
@@ -123,7 +130,7 @@
           </div>
 
           <div class="throw-actions">
-            <button id="missBtn" class="secondary">Minutí</button>
+            <button id="missBtn" class="secondary miss-button"><span class="miss-icon" aria-hidden="true"><svg viewBox="0 0 32 32" focusable="false"><circle cx="16" cy="16" r="10"></circle><circle cx="16" cy="16" r="4"></circle><path d="M6 26L26 6"></path><path d="M21 6h5v5"></path></svg></span><span>Minutí</span></button>
             <button id="confirmThrowBtn" class="primary">Zapsat hod</button>
           </div>
         </div>

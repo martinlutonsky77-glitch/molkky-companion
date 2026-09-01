@@ -1,8 +1,40 @@
 const UPDATE_CONFIG = {
   owner: "martinlutonsky77-glitch",
   repo: "molkky-companion",
-  currentVersion: "1.4.0"
+  currentVersion: "1.5.0"
 };
+
+
+const THEME_KEY = "molkky.theme.v1";
+let theme = localStorage.getItem(THEME_KEY) || "light";
+
+const AVATAR_ICONS = [
+  `<svg viewBox="0 0 40 40"><path d="M20 5l8 11h-5l7 9h-7v10h-6V25h-7l7-9h-5z"/></svg>`,
+  `<svg viewBox="0 0 40 40"><path d="M31 8C20 8 10 13 8 24c5 2 10 1 14-2-2 4-5 7-10 10l3 3c7-5 12-11 14-18 1-3 2-6 2-9z"/></svg>`,
+  `<svg viewBox="0 0 40 40"><path d="M4 31l11-17 5 7 5-11 11 21H4zm12-5h8l-4-6-4 6z"/></svg>`,
+  `<svg viewBox="0 0 40 40"><path d="M22 4c2 7-2 10-5 14-3 4-4 8-1 12 2 3 8 5 12 1 5-5 2-12-6-27zm0 25c-3 0-5-2-5-5 0-2 1-4 4-7 0 5 4 6 4 9 0 2-1 3-3 3z"/></svg>`,
+  `<svg viewBox="0 0 40 40"><path d="M20 4l4.7 9.6 10.6 1.5-7.7 7.5 1.8 10.6L20 28.2l-9.4 5 1.8-10.6-7.7-7.5 10.6-1.5z"/></svg>`,
+  `<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="14"/><circle cx="20" cy="20" r="8"/><circle cx="20" cy="20" r="2"/></svg>`,
+  `<svg viewBox="0 0 40 40"><path d="M6 12l7 6 7-10 7 10 7-6-4 20H10L6 12zm7 15h14"/></svg>`,
+  `<svg viewBox="0 0 40 40"><path d="M23 3L8 22h11l-2 15 15-21H21z"/></svg>`
+];
+function stableIndex(id, n=AVATAR_ICONS.length){
+  let h=0; for(const ch of String(id||"")) h=((h*31)+ch.charCodeAt(0))>>>0; return h%n;
+}
+function avatarMarkup(p, extraClass=""){
+  return `<span class="player-avatar ${extraClass}" aria-hidden="true">${AVATAR_ICONS[stableIndex(p?.id)]}</span>`;
+}
+function playerIdentity(p, subtitle=""){
+  return `<div class="player-identity">${avatarMarkup(p)}<div class="player-copy"><div class="player-name">${esc(p.name)}</div>${subtitle?`<small>${subtitle}</small>`:""}</div></div>`;
+}
+function applyTheme(next){
+  theme = next === "dark" ? "dark" : "light";
+  document.documentElement.dataset.theme = theme;
+  localStorage.setItem(THEME_KEY, theme);
+  const icon=$("themeToggleIcon"); if(icon) icon.textContent = theme === "dark" ? "☀" : "☾";
+  const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.setAttribute('content', theme === "dark" ? '#0c120d' : '#f6f1e7');
+}
+function toggleTheme(){ applyTheme(theme === "dark" ? "light" : "dark"); }
 
 const STORAGE = {
   players: "molkky.players.v1",
@@ -101,8 +133,8 @@ function compareVersions(a,b){
 function renderHome(){
   $("tournamentNightBtn").textContent = tournament ? `Pokračovat v turnajové noci (${tournament.gameIds.length} her)` : "Turnajová noc";
   $("playerList").innerHTML = players.length ? players.map(p => `
-    <div class="player-row">
-      <div class="player-name">${esc(p.name)}</div>
+    <div class="player-row player-tile">
+      ${playerIdentity(p, `Profil hráče`)}
       <button class="ghost danger-text" data-del="${p.id}">Smazat</button>
     </div>`).join("") : `<div class="muted">Zatím žádní hráči.</div>`;
 
@@ -139,7 +171,7 @@ function renderSetupPlayers(){
   $("orderedPlayers").innerHTML = ordered.length ? ordered.map((p,i)=>`
     <div class="order-row" draggable="true" data-order-id="${p.id}">
       <span class="drag-handle" title="Přetáhnout">☰</span>
-      <span class="player-name">${esc(p.name)}</span>
+      ${playerIdentity(p)}
       <button class="mini" data-up="${p.id}" ${i===0?"disabled":""}>↑</button>
       <button class="mini" data-down="${p.id}" ${i===ordered.length-1?"disabled":""}>↓</button>
       <button class="remove-order" data-remove-order="${p.id}" title="Odebrat">×</button>
@@ -148,7 +180,7 @@ function renderSetupPlayers(){
   const remaining = players.filter(p => !pendingSetupIds.includes(p.id));
   $("setupPlayers").innerHTML = remaining.length ? remaining.map(p => `
     <button class="setup-pool-btn" data-add-order="${p.id}">
-      <span class="player-name">${esc(p.name)}</span><span>+ Přidat</span>
+      ${playerIdentity(p)}<span>+ Přidat</span>
     </button>`).join("") : `<div class="muted">Všichni hráči jsou vybraní.</div>`;
 
   document.querySelectorAll("[data-add-order]").forEach(b => b.onclick = () => {
@@ -273,7 +305,7 @@ function currentPlayer(){ return game.players[game.turnIndex]; }
 
 function renderPins(){
   $("pinsGrid").innerHTML = Array.from({length:12},(_,i)=>i+1).map(n =>
-    `<button class="pin ${selectedPins.has(n)?"selected":""}" data-pin="${n}">${n}</button>`
+    `<button class="pin ${selectedPins.has(n)?"selected":""}" data-pin="${n}"><span class="wood-pin"><span>${n}</span></span><span class="pin-mark">${AVATAR_ICONS[(n-1)%AVATAR_ICONS.length]}</span></button>`
   ).join("");
   document.querySelectorAll("[data-pin]").forEach(b => b.onclick = () => {
     const n = Number(b.dataset.pin);
@@ -322,6 +354,7 @@ function renderGame(){
   const p = currentPlayer();
   $("gameRound").textContent = `Kolo ${game.round}`;
   $("currentPlayerName").textContent = p.name;
+  $("currentPlayerBadge").innerHTML = avatarMarkup(p, "hero-avatar");
   $("currentScore").textContent = p.score;
   $("targetHint").textContent = p.score < 50 ? `Potřebuješ ${50-p.score} bodů` : "Na hraně";
   $("missesHint").textContent = game.threeMissRule ? `Minutí: ${p.consecutiveMisses}/3` : "";
@@ -339,10 +372,7 @@ function renderStandings(targetId, live=false){
   });
   $(targetId).innerHTML = sorted.map(p => `
     <div class="standing-row ${live && currentPlayer()?.id===p.id?"active":""} ${p.eliminated?"eliminated":""}">
-      <div>
-        <div class="player-name">${esc(p.name)}</div>
-        <small>${p.eliminated?"Vyřazen":`${p.throws} hodů · ${p.consecutiveMisses} minutí`}</small>
-      </div>
+      ${playerIdentity(p, p.eliminated?"Vyřazen":`${p.throws} hodů · ${p.consecutiveMisses} minutí`)}
       <div class="standing-score">${p.score}</div>
     </div>`).join("");
 }
@@ -605,6 +635,7 @@ $("pointsModeBtn").onclick = () => setEntryMode("points");
 $("confirmThrowBtn").onclick = () => submitThrow(false);
 $("missBtn").onclick = () => submitThrow(true);
 $("undoBtn").onclick = restoreLast;
+$("themeToggleBtn").onclick = toggleTheme;
 $("checkUpdateBtn").onclick = checkForUpdate;
 $("navStats").onclick = () => showView("statsView");
 $("rematchBtn").onclick = () => { setupMode="single"; startSetup("single", rematchPlayerIds); };
@@ -628,6 +659,7 @@ $("clearHistoryBtn").onclick = () => {
   }
 };
 
+applyTheme(theme);
 renderHome();
 showView("homeView");
 

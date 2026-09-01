@@ -1,0 +1,21 @@
+Mölkky Companion v1.5.0
+
+NOVÝ VZHLED
+- Světlý a tmavý režim.
+- Okamžité přepnutí ikonou slunce/měsíce v horní liště.
+- Volba se ukládá pro příští spuštění.
+- Nové přírodní barvy, dřevěný vzhled a kontrast pro venkovní použití.
+
+HRÁČI
+- Každý hráč má stabilní grafickou dlaždici/ikonu odvozenou z profilu.
+- Grafika je vidět v seznamu hráčů, při řazení, v pořadí i u hráče na tahu.
+
+HRA
+- Kuželky dostaly dřevěný vizuál a drobné grafické značky.
+- Minutí má novou vlastní ikonu terče s chybným hodem.
+
+TECHNICKY
+- versionCode 6
+- versionName 1.5.0
+- update checker míří na v1.5.0
+- zachováno package ID a stávající podpisovací workflow.
