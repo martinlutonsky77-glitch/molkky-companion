@@ -130,7 +130,19 @@
           </div>
 
           <div class="throw-actions">
-            <button id="missBtn" class="secondary miss-button"><span class="miss-icon" aria-hidden="true"><svg viewBox="0 0 32 32" focusable="false"><circle cx="16" cy="16" r="10"></circle><circle cx="16" cy="16" r="4"></circle><path d="M6 26L26 6"></path><path d="M21 6h5v5"></path></svg></span><span>Minutí</span></button>
+            <button id="missBtn" class="secondary miss-button">
+              <span class="miss-icon funny-miss" aria-hidden="true">
+                <svg viewBox="0 0 44 44" focusable="false">
+                  <defs><linearGradient id="missWood" x1="0" x2="1"><stop offset="0" stop-color="#b8783e"/><stop offset=".48" stop-color="#efc784"/><stop offset="1" stop-color="#9f6333"/></linearGradient></defs>
+                  <path d="M14 8c0-3 3-5 8-5s8 2 8 5l2 24c.3 4-3 7-10 7s-10-3-10-7z" fill="url(#missWood)" stroke="#6f431f" stroke-width="1.2"/>
+                  <ellipse cx="22" cy="8" rx="8" ry="4" fill="#efc784" stroke="#6f431f" stroke-width="1.2"/>
+                  <path d="M17 17l3 3m0-3l-3 3M24 17l3 3m0-3l-3 3" stroke="#342015" stroke-width="1.8" stroke-linecap="round"/>
+                  <path d="M19 26c2 2 4 2 6 0" stroke="#7b302e" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+                  <path d="M23 27c0 3 2 4 3 2" stroke="#b83d3d" stroke-width="2" fill="none" stroke-linecap="round"/>
+                  <path d="M7 36L37 6" stroke="#d9443f" stroke-width="5" stroke-linecap="round"/>
+                </svg>
+              </span><span>Minutí</span>
+            </button>
             <button id="confirmThrowBtn" class="primary">Zapsat hod</button>
           </div>
         </div>

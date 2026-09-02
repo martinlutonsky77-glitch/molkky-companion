@@ -91,3 +91,26 @@ dialog{background:var(--surface);color:var(--text)}#playerForm input{background:
 html[data-theme="dark"] .wood-pin{filter:saturate(.88) brightness(.86)}
 html[data-theme="dark"] .icon-btn{box-shadow:0 4px 14px rgba(0,0,0,.25)}
 @media(max-width:520px){.top-actions{gap:2px}.top-actions .ghost{padding:8px 7px;font-size:13px}.icon-btn{width:38px;height:38px}.player-avatar{width:40px;height:40px;flex-basis:40px}.order-row{grid-template-columns:auto minmax(0,1fr) auto auto}.order-row .remove-order{grid-column:auto}.wood-pin{width:34px;height:45px}.pin{padding:7px 3px!important}}
+
+
+/* v1.6 – 3D pins, human avatars, funny miss */
+.player-avatar{width:46px;height:46px;flex:0 0 46px;border-radius:50%!important;overflow:hidden;background:var(--avatar-bg)!important;display:grid;place-items:center;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--line) 70%,transparent),0 3px 9px rgba(0,0,0,.08)}
+.player-avatar svg{width:100%!important;height:100%!important;display:block;fill:initial!important;stroke:initial!important}
+.hero-avatar{width:60px!important;height:60px!important;flex-basis:60px!important;border-radius:50%!important;box-shadow:0 5px 16px rgba(0,0,0,.18)!important}
+
+.pins-grid{gap:10px;align-items:end}
+.pin{aspect-ratio:.82/1.12!important;border-radius:18px!important;background:var(--surface-2)!important;color:var(--text)!important;border:1px solid var(--line)!important;padding:8px 3px 10px!important;display:flex!important;align-items:flex-end!important;justify-content:center!important;box-shadow:0 7px 17px rgba(0,0,0,.07)!important;overflow:visible!important}
+.pin:active{transform:translateY(2px) scale(.97)}
+.pin.selected{background:color-mix(in srgb,var(--primary) 15%,var(--surface))!important;box-shadow:0 0 0 3px var(--primary),0 10px 20px rgba(0,0,0,.09)!important;border-color:var(--primary)!important}
+.wood-pin{width:48px!important;height:66px!important;border-radius:12px 12px 10px 10px!important;background:linear-gradient(90deg,#9c6031 0%,#c98749 13%,#e2b66f 34%,#f1ce8b 52%,#d99d55 69%,#a56735 91%,#8a522c 100%)!important;display:flex!important;align-items:flex-start!important;justify-content:center!important;position:relative!important;box-shadow:inset 7px 0 9px rgba(255,255,255,.13),inset -7px 0 9px rgba(74,39,14,.18),0 7px 8px rgba(55,34,18,.22)!important}
+.wood-pin:before{content:""!important;position:absolute!important;left:2px!important;right:2px!important;top:-7px!important;height:16px!important;border-radius:50%!important;background:radial-gradient(ellipse at 45% 35%,#f6d99d 0 28%,#e7bb77 48%,#bd7d42 100%)!important;border:1px solid rgba(90,52,24,.25)!important;box-shadow:inset 0 1px 3px rgba(255,255,255,.35)!important}
+.wood-pin:after{content:"";position:absolute;left:8px;right:8px;bottom:-4px;height:8px;border-radius:50%;background:rgba(69,42,23,.16);filter:blur(2px)}
+.pin-number{position:relative;z-index:2;margin-top:-4px;width:31px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:20px;font-weight:950;color:#2a1a10;text-shadow:0 1px rgba(255,255,255,.35)}
+.pin-mark{display:none!important}
+.pin.selected .wood-pin{transform:translateY(-2px);filter:saturate(1.08) brightness(1.03)}
+
+.miss-button{display:flex;align-items:center;justify-content:center;gap:9px}
+.miss-icon{width:36px!important;height:36px!important;display:inline-grid!important;place-items:center!important;color:inherit!important}
+.miss-icon svg{width:36px!important;height:36px!important;display:block!important;fill:initial!important;stroke:initial!important}
+.funny-miss{filter:drop-shadow(0 2px 2px rgba(0,0,0,.12))}
+@media(max-width:520px){.wood-pin{width:42px!important;height:58px!important}.player-avatar{width:42px;height:42px;flex-basis:42px}}

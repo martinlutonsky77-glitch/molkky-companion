@@ -1,32 +1,62 @@
 const UPDATE_CONFIG = {
   owner: "martinlutonsky77-glitch",
   repo: "molkky-companion",
-  currentVersion: "1.5.0"
+  currentVersion: "1.6.0"
 };
 
 
 const THEME_KEY = "molkky.theme.v1";
 let theme = localStorage.getItem(THEME_KEY) || "light";
 
-const AVATAR_ICONS = [
-  `<svg viewBox="0 0 40 40"><path d="M20 5l8 11h-5l7 9h-7v10h-6V25h-7l7-9h-5z"/></svg>`,
-  `<svg viewBox="0 0 40 40"><path d="M31 8C20 8 10 13 8 24c5 2 10 1 14-2-2 4-5 7-10 10l3 3c7-5 12-11 14-18 1-3 2-6 2-9z"/></svg>`,
-  `<svg viewBox="0 0 40 40"><path d="M4 31l11-17 5 7 5-11 11 21H4zm12-5h8l-4-6-4 6z"/></svg>`,
-  `<svg viewBox="0 0 40 40"><path d="M22 4c2 7-2 10-5 14-3 4-4 8-1 12 2 3 8 5 12 1 5-5 2-12-6-27zm0 25c-3 0-5-2-5-5 0-2 1-4 4-7 0 5 4 6 4 9 0 2-1 3-3 3z"/></svg>`,
-  `<svg viewBox="0 0 40 40"><path d="M20 4l4.7 9.6 10.6 1.5-7.7 7.5 1.8 10.6L20 28.2l-9.4 5 1.8-10.6-7.7-7.5 10.6-1.5z"/></svg>`,
-  `<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="14"/><circle cx="20" cy="20" r="8"/><circle cx="20" cy="20" r="2"/></svg>`,
-  `<svg viewBox="0 0 40 40"><path d="M6 12l7 6 7-10 7 10 7-6-4 20H10L6 12zm7 15h14"/></svg>`,
-  `<svg viewBox="0 0 40 40"><path d="M23 3L8 22h11l-2 15 15-21H21z"/></svg>`
+const FACE_AVATARS = [
+  ["#f2c6a0","#4b2d1f","short","#355c9a"],["#f3c8a7","#d7a36b","long","#456b4b"],
+  ["#d9a679","#2c201d","curly","#8d4f2b"],["#f0bd97","#201a18","glasses","#31592a"],
+  ["#f3c9a8","#b77948","bob","#7a3d63"],["#b97652","#20160f","short","#2f6a65"],
+  ["#f1c5a3","#805033","cap","#a55b2c"],["#e4b18a","#40322a","waves","#475d87"],
+  ["#8a5438","#181311","curly","#8b5b38"],["#efc19e","#33241d","beard","#3b6f4e"],
+  ["#f0c5a5","#c18b5d","long","#355c9a"],["#c17c58","#2b201b","bob","#7d4e8f"],
+  ["#ecc0a0","#191919","short","#9a5538"],["#f4cbaa","#6b4b34","glasses","#3a716a"],
+  ["#a86443","#1b1816","beard","#364f6b"],["#f2c39f","#b46839","curly","#6b4a2f"],
+  ["#d89b73","#28201c","cap","#4e6d42"],["#f0bea0","#28221e","waves","#74435f"],
+  ["#74452f","#111111","short","#456b4b"],["#edc19f","#7f542f","beard","#9a6a2d"],
+  ["#f4c7a6","#31221c","long","#466aa0"],["#dca17a","#4a2a20","glasses","#93533d"],
+  ["#efc3a5","#d29a65","bob","#3f765f"],["#9b6041","#241a17","curly","#315b7d"],
+  ["#f3c8a7","#4d3729","cap","#6d4d83"],["#deb08b","#111111","beard","#3e7046"],
+  ["#f0c3a1","#9d5f34","waves","#a24f43"],["#7f4a32","#231814","long","#536c3e"],
+  ["#e8b28c","#554033","glasses","#426b8c"],["#f5caa8","#2a201a","curly","#7a5933"]
 ];
-function stableIndex(id, n=AVATAR_ICONS.length){
+
+function stableIndex(id, n=FACE_AVATARS.length){
   let h=0; for(const ch of String(id||"")) h=((h*31)+ch.charCodeAt(0))>>>0; return h%n;
 }
+function faceAvatarSvg(index){
+  const [skin,hair,style,shirt]=FACE_AVATARS[index%FACE_AVATARS.length];
+  const glasses=style==="glasses", beard=style==="beard", cap=style==="cap";
+  const longHair=["long","waves","bob"].includes(style), curly=style==="curly";
+  const hairBack=longHair
+    ? `<path d="M9 21c0-9 5-15 11-15s11 6 11 15v11H9z" fill="${hair}"/>`
+    : curly
+      ? `<g fill="${hair}"><circle cx="12" cy="14" r="5"/><circle cx="18" cy="10" r="5"/><circle cx="24" cy="11" r="5"/><circle cx="29" cy="16" r="5"/></g>`
+      : `<path d="M10 17c1-8 5-12 10-12 7 0 11 5 11 13-5-5-15-6-21-1z" fill="${hair}"/>`;
+  const capSvg=cap?`<path d="M10 13c3-7 16-8 21-1l-1 4H11z" fill="${shirt}"/><path d="M28 15h7" stroke="${shirt}" stroke-width="3" stroke-linecap="round"/>`:"";
+  const beardSvg=beard?`<path d="M13 24c1 8 5 11 8 11 5 0 8-4 9-11-4 4-13 5-17 0z" fill="${hair}" opacity=".92"/>`:"";
+  const glassesSvg=glasses?`<g fill="none" stroke="#2a2a2a" stroke-width="1.5"><rect x="12" y="19" width="7" height="5" rx="2"/><rect x="22" y="19" width="7" height="5" rx="2"/><path d="M19 21h3"/></g>`:"";
+  return `<svg viewBox="0 0 40 40" focusable="false" aria-hidden="true">
+    <circle cx="20" cy="20" r="20" fill="${shirt}" opacity=".12"/>
+    ${hairBack}<path d="M7 40c1-8 6-12 13-12s12 4 13 12z" fill="${shirt}"/>
+    <ellipse cx="20" cy="21" rx="10" ry="12" fill="${skin}"/>${capSvg}
+    <path d="M13 17c2-5 12-8 17-2" fill="none" stroke="${hair}" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="16" cy="21" r="1.2" fill="#231b18"/><circle cx="24" cy="21" r="1.2" fill="#231b18"/>
+    <path d="M18 26c1.3 1 2.7 1 4 0" fill="none" stroke="#8c4f43" stroke-width="1.4" stroke-linecap="round"/>
+    ${beardSvg}${glassesSvg}</svg>`;
+}
 function avatarMarkup(p, extraClass=""){
-  return `<span class="player-avatar ${extraClass}" aria-hidden="true">${AVATAR_ICONS[stableIndex(p?.id)]}</span>`;
+  return `<span class="player-avatar ${extraClass}" aria-hidden="true">${faceAvatarSvg(stableIndex(p?.id))}</span>`;
 }
 function playerIdentity(p, subtitle=""){
   return `<div class="player-identity">${avatarMarkup(p)}<div class="player-copy"><div class="player-name">${esc(p.name)}</div>${subtitle?`<small>${subtitle}</small>`:""}</div></div>`;
 }
+
 function applyTheme(next){
   theme = next === "dark" ? "dark" : "light";
   document.documentElement.dataset.theme = theme;
@@ -305,7 +335,7 @@ function currentPlayer(){ return game.players[game.turnIndex]; }
 
 function renderPins(){
   $("pinsGrid").innerHTML = Array.from({length:12},(_,i)=>i+1).map(n =>
-    `<button class="pin ${selectedPins.has(n)?"selected":""}" data-pin="${n}"><span class="wood-pin"><span>${n}</span></span><span class="pin-mark">${AVATAR_ICONS[(n-1)%AVATAR_ICONS.length]}</span></button>`
+    `<button class="pin ${selectedPins.has(n)?"selected":""}" data-pin="${n}" aria-label="Kuželka ${n}"><span class="wood-pin"><span class="pin-number">${n}</span></span></button>`
   ).join("");
   document.querySelectorAll("[data-pin]").forEach(b => b.onclick = () => {
     const n = Number(b.dataset.pin);

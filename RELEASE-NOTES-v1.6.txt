@@ -1,0 +1,9 @@
+Mölkky Companion v1.6.0
+
+- 3D dřevěné kuželky 1–12, pouze s číslem.
+- 30 různých avatarů hráčů ve stylu lidských hlav.
+- Stabilní avatar pro každého hráče.
+- Vtipná přeškrtnutá „omráčená“ kuželka pro Minutí.
+- Zachován světlý/tmavý režim.
+- Opraven updater: INTERNET permission + otevření APK odkazu v externím prohlížeči.
+- versionCode 7 / versionName 1.6.0.
