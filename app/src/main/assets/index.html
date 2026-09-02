@@ -16,11 +16,15 @@
         <h1>Companion</h1>
       </div>
       <div class="top-actions">
-        <button id="themeToggleBtn" class="icon-btn theme-toggle" type="button" aria-label="Přepnout světlý/tmavý vzhled" title="Přepnout vzhled">
+        <button id="themeToggleBtn" class="icon-btn theme-toggle top-icon" type="button" aria-label="Přepnout světlý/tmavý vzhled" title="Přepnout vzhled">
           <span id="themeToggleIcon" aria-hidden="true">☾</span>
         </button>
-        <button id="checkUpdateBtn" class="ghost">Aktualizace</button>
-        <button id="navStats" class="ghost">Statistiky</button>
+        <button id="navStats" class="icon-btn top-icon" type="button" aria-label="Statistiky" title="Statistiky">
+          <span aria-hidden="true">▥</span>
+        </button>
+        <button id="navSettings" class="icon-btn top-icon" type="button" aria-label="Nastavení" title="Nastavení">
+          <span aria-hidden="true">⚙</span>
+        </button>
       </div>
     </header>
 
@@ -35,6 +39,7 @@
           <div class="hero-actions">
             <button id="newGameBtn" class="primary big">Nová hra</button>
             <button id="tournamentNightBtn" class="secondary big">Turnajová noc</button>
+            <button id="restoreGameBtn" class="secondary big hidden">Obnovit rozehranou hru</button>
           </div>
         </div>
 
@@ -81,8 +86,8 @@
         <div class="card compact">
           <label class="toggle-row">
             <span>
-              <strong>3 minutí = vyřazení</strong>
-              <small>Oficiální pravidlo pro tři po sobě jdoucí hody bez bodu.</small>
+              <strong id="missRuleLabel">3 minutí = vyřazení</strong>
+              <small id="missRuleHelp">Limit po sobě jdoucích hodů bez bodu.</small>
             </span>
             <input id="threeMissRule" type="checkbox" checked>
           </label>
@@ -104,7 +109,7 @@
           <div id="currentPlayerBadge" class="current-player-badge" aria-hidden="true"></div>
           <div class="score-line">
             <span id="currentScore">0</span>
-            <small>/ 50</small>
+            <small id="scoreTargetText">/ 50</small>
           </div>
           <div id="targetHint" class="target-hint">Potřebuješ 50 bodů</div>
           <div id="missesHint" class="misses-hint">Minutí: 0/3</div>
@@ -145,6 +150,7 @@
             </button>
             <button id="confirmThrowBtn" class="primary">Zapsat hod</button>
           </div>
+          <button id="nextPlayerBtn" class="primary full hidden next-player-btn">Další hráč →</button>
         </div>
 
         <div class="card">
@@ -159,6 +165,123 @@
           <h2>Statistiky</h2>
         </div>
         <div id="statsContent"></div>
+      </section>
+
+
+      <section id="settingsView" class="view">
+        <div class="section-head settings-head">
+          <button class="ghost back-home">← Zpět</button>
+          <h2>Nastavení</h2>
+        </div>
+
+        <div class="card settings-card">
+          <div class="eyebrow">VZHLED</div>
+          <h3>Jak má aplikace vypadat</h3>
+
+          <div class="setting-block">
+            <label class="setting-label">Režim vzhledu</label>
+            <div class="segmented three">
+              <button type="button" class="setting-choice" data-theme-mode="light">☀ Světlý</button>
+              <button type="button" class="setting-choice" data-theme-mode="dark">☾ Tmavý</button>
+              <button type="button" class="setting-choice" data-theme-mode="system">◐ Telefon</button>
+            </div>
+            <small>Rychlé přepnutí ☀/☾ nahoře zůstává vždy dostupné.</small>
+          </div>
+
+          <div class="setting-block">
+            <label class="setting-label">Barevný akcent</label>
+            <div class="accent-choices">
+              <button class="accent-dot" type="button" data-accent="#3f6f35" style="--dot:#3f6f35" aria-label="Zelená"></button>
+              <button class="accent-dot" type="button" data-accent="#9a5b1f" style="--dot:#9a5b1f" aria-label="Dřevěná"></button>
+              <button class="accent-dot" type="button" data-accent="#2f66a7" style="--dot:#2f66a7" aria-label="Modrá"></button>
+              <button class="accent-dot" type="button" data-accent="#6d4aa2" style="--dot:#6d4aa2" aria-label="Fialová"></button>
+              <button class="accent-dot" type="button" data-accent="#b84848" style="--dot:#b84848" aria-label="Červená"></button>
+              <button class="accent-dot" type="button" data-accent="#308b8b" style="--dot:#308b8b" aria-label="Tyrkysová"></button>
+              <button class="accent-dot" type="button" data-accent="#c78a22" style="--dot:#c78a22" aria-label="Jantarová"></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card settings-card">
+          <div class="eyebrow">PRAVIDLA HRY</div>
+          <h3>Výchozí nastavení nové hry</h3>
+
+          <div class="setting-row">
+            <div><strong>Cílové skóre</strong><small>Standardní Mölkky: 50 bodů.</small></div>
+            <input id="targetScoreSetting" class="number-setting" type="number" min="20" max="100" step="5" inputmode="numeric">
+          </div>
+
+          <div class="setting-row">
+            <div><strong>Limit minutí</strong><small>Počet minutí za sebou před vyřazením. 0 = bez vyřazení.</small></div>
+            <input id="missLimitSetting" class="number-setting" type="number" min="0" max="9" step="1" inputmode="numeric">
+          </div>
+
+          <label class="setting-row clickable">
+            <div><strong>Přehození cíle</strong><small>Při překročení cíle vrátit skóre na nastavenou hodnotu.</small></div>
+            <input id="bustEnabledSetting" type="checkbox">
+          </label>
+
+          <div class="setting-row" id="bustResetRow">
+            <div><strong>Návrat na</strong><small>Standardní pravidlo: 25 bodů.</small></div>
+            <input id="bustResetSetting" class="number-setting" type="number" min="0" max="99" step="1" inputmode="numeric">
+          </div>
+        </div>
+
+        <div class="card settings-card">
+          <div class="eyebrow">OVLÁDÁNÍ</div>
+          <h3>Rychlost hry</h3>
+
+          <div class="setting-block">
+            <label class="setting-label">Výchozí zadávání hodu</label>
+            <div class="segmented">
+              <button type="button" class="setting-choice" data-entry-default="pins">Kuželky</button>
+              <button type="button" class="setting-choice" data-entry-default="points">Body</button>
+            </div>
+          </div>
+
+          <label class="setting-row clickable">
+            <div><strong>Automaticky další hráč</strong><small>Po zapsání hodu rovnou přeskočí na dalšího hráče.</small></div>
+            <input id="autoAdvanceSetting" type="checkbox">
+          </label>
+
+          <label class="setting-row clickable">
+            <div><strong>Vibrace</strong><small>Krátká odezva při hodu, minutí a vítězství.</small></div>
+            <input id="vibrationSetting" type="checkbox">
+          </label>
+
+          <label class="setting-row clickable">
+            <div><strong>Zvuky</strong><small>Jemná zvuková odezva. Výchozí je vypnutá.</small></div>
+            <input id="soundSetting" type="checkbox">
+          </label>
+        </div>
+
+        <div class="card settings-card">
+          <div class="eyebrow">HRÁČI</div>
+          <div class="section-head">
+            <h3>Avatary</h3>
+            <small>Klepnutím můžeš změnit vzhled</small>
+          </div>
+          <div id="avatarSettingsList" class="avatar-settings-list"></div>
+        </div>
+
+        <div class="card settings-card">
+          <div class="eyebrow">DATA</div>
+          <h3>Správa uložených dat</h3>
+          <button id="settingsClearHistoryBtn" class="secondary full">Smazat historii her</button>
+          <button id="resetSettingsBtn" class="secondary full settings-gap">Obnovit výchozí nastavení</button>
+        </div>
+
+        <div class="card settings-card">
+          <div class="eyebrow">AKTUALIZACE A APLIKACE</div>
+          <h3>Mölkky Companion</h3>
+          <button id="settingsCheckUpdateBtn" class="secondary full">Zkontrolovat aktualizaci</button>
+          <div class="version-box">
+            <span>Verze aplikace</span>
+            <strong id="appVersionText">v1.7.0 (build 8)</strong>
+          </div>
+        </div>
+
+        <div class="settings-footer">Mölkky Companion • v1.7.0 • build 8</div>
       </section>
 
       <section id="gameOverView" class="view">

@@ -1,12 +1,33 @@
 const UPDATE_CONFIG = {
   owner: "martinlutonsky77-glitch",
   repo: "molkky-companion",
-  currentVersion: "1.6.0"
+  currentVersion: "1.7.0"
 };
 
 
 const THEME_KEY = "molkky.theme.v1";
-let theme = localStorage.getItem(THEME_KEY) || "light";
+const APP_SETTINGS_KEY = "molkky.settings.v2";
+const ACTIVE_GAME_KEY = "molkky.activeGame.v1";
+
+const DEFAULT_SETTINGS = {
+  themeMode: localStorage.getItem(THEME_KEY) || "light",
+  accent: "#3f6f35",
+  targetScore: 50,
+  missLimit: 3,
+  bustEnabled: true,
+  bustReset: 25,
+  defaultEntryMode: localStorage.getItem("molkky.entryMode") || "pins",
+  autoAdvance: true,
+  vibration: true,
+  sound: false
+};
+
+function readSettings(){
+  try { return {...DEFAULT_SETTINGS, ...(JSON.parse(localStorage.getItem(APP_SETTINGS_KEY)||"{}"))}; }
+  catch { return {...DEFAULT_SETTINGS}; }
+}
+let appSettings = readSettings();
+let theme = "light";
 
 const FACE_AVATARS = [
   ["#f2c6a0","#4b2d1f","short","#355c9a"],["#f3c8a7","#d7a36b","long","#456b4b"],
@@ -50,21 +71,92 @@ function faceAvatarSvg(index){
     <path d="M18 26c1.3 1 2.7 1 4 0" fill="none" stroke="#8c4f43" stroke-width="1.4" stroke-linecap="round"/>
     ${beardSvg}${glassesSvg}</svg>`;
 }
+function avatarIndexFor(p){
+  const saved = players?.find?.(x => x.id === p?.id);
+  const idx = Number(saved?.avatarIndex ?? p?.avatarIndex);
+  return Number.isInteger(idx) ? ((idx % FACE_AVATARS.length)+FACE_AVATARS.length)%FACE_AVATARS.length : stableIndex(p?.id);
+}
 function avatarMarkup(p, extraClass=""){
-  return `<span class="player-avatar ${extraClass}" aria-hidden="true">${faceAvatarSvg(stableIndex(p?.id))}</span>`;
+  return `<span class="player-avatar ${extraClass}" aria-hidden="true">${faceAvatarSvg(avatarIndexFor(p))}</span>`;
 }
 function playerIdentity(p, subtitle=""){
   return `<div class="player-identity">${avatarMarkup(p)}<div class="player-copy"><div class="player-name">${esc(p.name)}</div>${subtitle?`<small>${subtitle}</small>`:""}</div></div>`;
 }
 
+function applyAccent(color){
+  const safe = /^#[0-9a-fA-F]{6}$/.test(color||"") ? color : "#3f6f35";
+  appSettings.accent = safe;
+  document.documentElement.style.setProperty("--primary", safe);
+  document.documentElement.style.setProperty("--primary-2", safe);
+}
+function physicalThemeFor(mode){
+  if(mode === "system") return window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ? "dark" : "light";
+  return mode === "dark" ? "dark" : "light";
+}
 function applyTheme(next){
   theme = next === "dark" ? "dark" : "light";
   document.documentElement.dataset.theme = theme;
-  localStorage.setItem(THEME_KEY, theme);
   const icon=$("themeToggleIcon"); if(icon) icon.textContent = theme === "dark" ? "☀" : "☾";
-  const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.setAttribute('content', theme === "dark" ? '#0c120d' : '#f6f1e7');
+  const meta=document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.setAttribute('content', theme === "dark" ? '#0c120d' : '#f6f1e7');
 }
-function toggleTheme(){ applyTheme(theme === "dark" ? "light" : "dark"); }
+function saveAppSettings(){
+  localStorage.setItem(APP_SETTINGS_KEY, JSON.stringify(appSettings));
+  localStorage.setItem(THEME_KEY, appSettings.themeMode === "system" ? physicalThemeFor("system") : appSettings.themeMode);
+  localStorage.setItem("molkky.entryMode", appSettings.defaultEntryMode);
+  applyAccent(appSettings.accent);
+}
+function applyThemeMode(mode){
+  appSettings.themeMode = ["light","dark","system"].includes(mode) ? mode : "light";
+  saveAppSettings();
+  applyTheme(physicalThemeFor(appSettings.themeMode));
+  updateSettingsControls();
+}
+function toggleTheme(){
+  const explicit = theme === "dark" ? "light" : "dark";
+  appSettings.themeMode = explicit;
+  saveAppSettings();
+  applyTheme(explicit);
+  updateSettingsControls();
+}
+function gameFeedback(kind="throw"){
+  if(appSettings.vibration && navigator.vibrate){
+    navigator.vibrate(kind==="win" ? [70,45,100] : kind==="miss" ? [50,35,50] : 28);
+  }
+  if(appSettings.sound){
+    try{
+      const Ctx=window.AudioContext||window.webkitAudioContext;
+      if(Ctx){
+        const ctx=new Ctx(), osc=ctx.createOscillator(), gain=ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value=kind==="win"?740:kind==="miss"?180:430;
+        gain.gain.setValueAtTime(.05,ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.12);
+        osc.start(); osc.stop(ctx.currentTime+.12);
+      }
+    }catch(e){}
+  }
+}
+function persistActiveGame(){
+  if(game) localStorage.setItem(ACTIVE_GAME_KEY, JSON.stringify(game));
+}
+function clearActiveGame(){ localStorage.removeItem(ACTIVE_GAME_KEY); }
+function getSavedActiveGame(){
+  try{
+    const g=JSON.parse(localStorage.getItem(ACTIVE_GAME_KEY)||"null");
+    return g && Array.isArray(g.players) && g.players.length>=2 ? g : null;
+  }catch{return null;}
+}
+function restoreActiveGame(){
+  const saved=getSavedActiveGame();
+  if(!saved) return;
+  game=saved;
+  rematchPlayerIds=game.players.map(p=>p.id);
+  setupMode=game.mode||"single";
+  selectedPins.clear(); selectedPoints=null;
+  entryMode=appSettings.defaultEntryMode;
+  renderGame(); showView("gameView");
+}
 
 const STORAGE = {
   players: "molkky.players.v1",
@@ -87,7 +179,7 @@ let tournament = load("molkky.tournament.v1", null);
 let lastFinishedRecord = null;
 
 const $ = (id) => document.getElementById(id);
-const views = ["homeView","setupView","gameView","statsView","gameOverView"];
+const views = ["homeView","setupView","gameView","statsView","settingsView","gameOverView"];
 
 function load(key, fallback){
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -98,6 +190,44 @@ function showView(id){
   views.forEach(v => $(v).classList.toggle("active", v === id));
   if(id === "homeView") renderHome();
   if(id === "statsView") renderStats();
+  if(id === "settingsView") renderSettings();
+}
+function updateSettingsControls(){
+  document.querySelectorAll("[data-theme-mode]").forEach(b=>b.classList.toggle("active", b.dataset.themeMode===appSettings.themeMode));
+  document.querySelectorAll("[data-entry-default]").forEach(b=>b.classList.toggle("active", b.dataset.entryDefault===appSettings.defaultEntryMode));
+  document.querySelectorAll("[data-accent]").forEach(b=>b.classList.toggle("active", b.dataset.accent.toLowerCase()===String(appSettings.accent).toLowerCase()));
+}
+function renderSettings(){
+  $("targetScoreSetting").value=appSettings.targetScore;
+  $("missLimitSetting").value=appSettings.missLimit;
+  appSettings.bustReset=Math.min(Math.max(0,Number(appSettings.bustReset)||25),Math.max(0,(Number(appSettings.targetScore)||50)-1));
+  $("bustEnabledSetting").checked=!!appSettings.bustEnabled;
+  $("bustResetSetting").max=Math.max(0,(Number(appSettings.targetScore)||50)-1);
+  $("bustResetSetting").value=appSettings.bustReset;
+  $("bustResetRow").classList.toggle("setting-disabled",!appSettings.bustEnabled);
+  $("autoAdvanceSetting").checked=!!appSettings.autoAdvance;
+  $("vibrationSetting").checked=!!appSettings.vibration;
+  $("soundSetting").checked=!!appSettings.sound;
+  $("appVersionText").textContent=`v${UPDATE_CONFIG.currentVersion} (build 8)`;
+
+  $("avatarSettingsList").innerHTML = players.length ? players.map(p=>`
+    <div class="avatar-setting-row">
+      ${playerIdentity(p)}
+      <div class="avatar-controls">
+        <button class="mini" data-avatar-prev="${p.id}" aria-label="Předchozí avatar">‹</button>
+        <button class="secondary avatar-change" data-avatar-next="${p.id}">Jiný vzhled</button>
+        <button class="mini" data-avatar-next="${p.id}" aria-label="Další avatar">›</button>
+      </div>
+    </div>`).join("") : `<div class="muted">Nejdřív vytvoř hráče.</div>`;
+  document.querySelectorAll("[data-avatar-next]").forEach(b=>b.onclick=()=>changeAvatar(b.dataset.avatarNext,1));
+  document.querySelectorAll("[data-avatar-prev]").forEach(b=>b.onclick=()=>changeAvatar(b.dataset.avatarPrev,-1));
+  updateSettingsControls();
+}
+function changeAvatar(id, delta){
+  const p=players.find(x=>x.id===id); if(!p) return;
+  p.avatarIndex=(avatarIndexFor(p)+delta+FACE_AVATARS.length)%FACE_AVATARS.length;
+  save(STORAGE.players,players);
+  renderSettings();
 }
 function esc(s){
   return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -106,7 +236,7 @@ function esc(s){
 function addPlayer(name){
   name = name.trim();
   if(!name) return;
-  const p = { id: crypto.randomUUID(), name };
+  const p = { id: crypto.randomUUID(), name, avatarIndex: Math.floor(Math.random()*FACE_AVATARS.length) };
   players.push(p);
   save(STORAGE.players, players);
   return p;
@@ -161,7 +291,12 @@ function compareVersions(a,b){
 }
 
 function renderHome(){
+  if(tournament && (!Array.isArray(tournament.gameIds) || tournament.gameIds.length===0)){
+    tournament=null;
+    save("molkky.tournament.v1", null);
+  }
   $("tournamentNightBtn").textContent = tournament ? `Pokračovat v turnajové noci (${tournament.gameIds.length} her)` : "Turnajová noc";
+  $("restoreGameBtn").classList.toggle("hidden", !getSavedActiveGame());
   $("playerList").innerHTML = players.length ? players.map(p => `
     <div class="player-row player-tile">
       ${playerIdentity(p, `Profil hráče`)}
@@ -194,6 +329,10 @@ function startSetup(mode="single", ids=null){
 }
 
 function renderSetupPlayers(){
+  const ml=Math.max(0,Number(appSettings.missLimit)||0);
+  $("missRuleLabel").textContent = ml>0 ? `${ml} minutí = vyřazení` : "Vyřazení za minutí vypnuto";
+  $("missRuleHelp").textContent = ml>0 ? "Limit po sobě jdoucích hodů bez bodu." : "Hráč se za minutí nevyřazuje.";
+  $("threeMissRule").checked = ml>0;
   $("setupModeTag").textContent = setupMode === "tournament" ? "Turnajová noc" : "Jedna hra";
   $("setupTitle").textContent = setupMode === "tournament" ? "Pořadí pro turnajovou hru" : "Vyber a seřaď hráče";
 
@@ -277,20 +416,13 @@ function randomOrder(){
 }
 function startTournamentNight(){
   setupMode = "tournament";
-  if(tournament){
+  if(tournament && Array.isArray(tournament.gameIds) && tournament.gameIds.length > 0){
     startSetup("tournament", tournament.playerIds);
     return;
   }
-  const {ratings}=buildRatings();
+  tournament = null;
+  save("molkky.tournament.v1", null);
   const ids = players.slice(0,Math.min(players.length,4)).map(p=>p.id);
-  tournament = {
-    id: crypto.randomUUID(),
-    startedAt: new Date().toISOString(),
-    playerIds: ids,
-    gameIds: [],
-    startingRatings: Object.fromEntries(ids.map(id=>[id,ratings[id] ?? 1500]))
-  };
-  save("molkky.tournament.v1", tournament);
   startSetup("tournament", ids);
 }
 function ensureTournamentRoster(ids){
@@ -317,7 +449,13 @@ function startGame(ids = pendingSetupIds){
     round: 1,
     turnIndex: 0,
     totalTurns: 0,
+    targetScore: Math.max(20, Number(appSettings.targetScore)||50),
+    missLimit: $("threeMissRule").checked ? Math.max(1, Number(appSettings.missLimit)||3) : 0,
     threeMissRule: $("threeMissRule").checked,
+    bustEnabled: !!appSettings.bustEnabled,
+    bustReset: Math.min(Math.max(0, Number(appSettings.bustReset)||25), Math.max(0,(Math.max(20,Number(appSettings.targetScore)||50))-1)),
+    autoAdvance: !!appSettings.autoAdvance,
+    awaitingNext: false,
     players: roster.map(p => ({
       id: p.id, name: p.name, score: 0, consecutiveMisses: 0,
       eliminated: false, throws: 0, scoringThrows: 0, pointsScored: 0, busts: 0
@@ -329,6 +467,7 @@ function startGame(ids = pendingSetupIds){
   selectedPoints = null;
   renderGame();
   showView("gameView");
+  persistActiveGame();
 }
 function activePlayers(){ return game.players.filter(p => !p.eliminated); }
 function currentPlayer(){ return game.players[game.turnIndex]; }
@@ -380,20 +519,34 @@ function renderSelection(){
 }
 function renderGame(){
   if(!game) return;
-  if(currentPlayer()?.eliminated) moveToNextPlayer();
+  game.targetScore = Number(game.targetScore)||50;
+  game.missLimit = Number(game.missLimit ?? (game.threeMissRule?3:0))||0;
+  game.bustEnabled = game.bustEnabled !== false;
+  game.bustReset = Math.min(Number(game.bustReset ?? 25), Math.max(0,game.targetScore-1));
+  game.autoAdvance = game.autoAdvance !== false;
+  game.awaitingNext = !!game.awaitingNext;
+
+  if(currentPlayer()?.eliminated && !game.awaitingNext) moveToNextPlayer();
   const p = currentPlayer();
   $("gameRound").textContent = `Kolo ${game.round}`;
   $("currentPlayerName").textContent = p.name;
   $("currentPlayerBadge").innerHTML = avatarMarkup(p, "hero-avatar");
   $("currentScore").textContent = p.score;
-  $("targetHint").textContent = p.score < 50 ? `Potřebuješ ${50-p.score} bodů` : "Na hraně";
-  $("missesHint").textContent = game.threeMissRule ? `Minutí: ${p.consecutiveMisses}/3` : "";
+  $("scoreTargetText").textContent = `/ ${game.targetScore}`;
+  $("targetHint").textContent = p.score < game.targetScore ? `Potřebuješ ${game.targetScore-p.score} bodů` : "Na hraně";
+  $("missesHint").textContent = game.missLimit>0 ? `Minutí: ${p.consecutiveMisses}/${game.missLimit}` : "Minutí bez vyřazení";
   renderPins();
   renderPoints();
   setEntryMode(entryMode);
   renderSelection();
   renderStandings("liveStandings", true);
   $("undoBtn").disabled = game.snapshots.length === 0;
+  $("nextPlayerBtn").classList.toggle("hidden", !game.awaitingNext);
+  const lock=!!game.awaitingNext;
+  $("confirmThrowBtn").disabled=lock;
+  $("missBtn").disabled=lock;
+  document.querySelectorAll("[data-pin],[data-points]").forEach(b=>b.disabled=lock);
+  if(lock) $("targetHint").textContent="Hod zapsán. Pokračuj na dalšího hráče.";
 }
 function renderStandings(targetId, live=false){
   const sorted = [...game.players].sort((a,b)=> {
@@ -409,7 +562,7 @@ function renderStandings(targetId, live=false){
 
 function snapshot(){
   game.snapshots.push(JSON.stringify({
-    round: game.round, turnIndex: game.turnIndex, totalTurns: game.totalTurns,
+    round: game.round, turnIndex: game.turnIndex, totalTurns: game.totalTurns, awaitingNext: game.awaitingNext,
     players: game.players
   }));
   if(game.snapshots.length > 100) game.snapshots.shift();
@@ -418,40 +571,44 @@ function restoreLast(){
   if(!game?.snapshots.length) return;
   const prev = JSON.parse(game.snapshots.pop());
   game.round = prev.round; game.turnIndex = prev.turnIndex; game.totalTurns = prev.totalTurns;
+  game.awaitingNext = !!prev.awaitingNext;
   game.players = prev.players;
   selectedPins.clear();
   selectedPoints = null;
   renderGame();
+  persistActiveGame();
 }
 function submitThrow(forceMiss=false){
-  if(!game) return;
+  if(!game || game.awaitingNext) return;
   snapshot();
   const p = currentPlayer();
-  let points = forceMiss ? 0 : calcThrowPoints();
+  const points = forceMiss ? 0 : calcThrowPoints();
 
   p.throws++;
   game.totalTurns++;
 
   if(points === 0){
     p.consecutiveMisses++;
-    if(game.threeMissRule && p.consecutiveMisses >= 3) p.eliminated = true;
+    if(game.missLimit > 0 && p.consecutiveMisses >= game.missLimit) p.eliminated = true;
+    gameFeedback("miss");
   } else {
     p.scoringThrows++;
     p.pointsScored += points;
     p.consecutiveMisses = 0;
     const newScore = p.score + points;
-    if(newScore > 50){
-      p.score = 25;
+    if(game.bustEnabled && newScore > game.targetScore){
+      p.score = game.bustReset;
       p.busts++;
     } else {
       p.score = newScore;
     }
+    gameFeedback("throw");
   }
 
   selectedPins.clear();
   selectedPoints = null;
 
-  if(p.score === 50 && !p.eliminated){
+  if((p.score === game.targetScore || (!game.bustEnabled && p.score >= game.targetScore)) && !p.eliminated){
     finishGame(p);
     return;
   }
@@ -460,8 +617,20 @@ function submitThrow(forceMiss=false){
     return;
   }
 
+  if(game.autoAdvance){
+    moveToNextPlayer();
+  } else {
+    game.awaitingNext=true;
+  }
+  renderGame();
+  persistActiveGame();
+}
+function continueToNextPlayer(){
+  if(!game) return;
+  game.awaitingNext=false;
   moveToNextPlayer();
   renderGame();
+  persistActiveGame();
 }
 function moveToNextPlayer(){
   const start = game.turnIndex;
@@ -497,9 +666,11 @@ function finishGame(winner, byElimination=false){
     save("molkky.tournament.v1", tournament);
   }
   $("winnerName").textContent = winner.name;
+  clearActiveGame();
+  gameFeedback("win");
   $("winnerSummary").textContent = byElimination
     ? `Vyhrává jako poslední hráč ve hře.`
-    : `50 bodů za ${winner.throws} hodů.`;
+    : `${game.targetScore} bodů za ${winner.throws} hodů.`;
   renderStandings("finalStandings");
   renderTournamentGameOver();
   showView("gameOverView");
@@ -666,8 +837,11 @@ $("confirmThrowBtn").onclick = () => submitThrow(false);
 $("missBtn").onclick = () => submitThrow(true);
 $("undoBtn").onclick = restoreLast;
 $("themeToggleBtn").onclick = toggleTheme;
-$("checkUpdateBtn").onclick = checkForUpdate;
+$("restoreGameBtn").onclick = restoreActiveGame;
+$("nextPlayerBtn").onclick = continueToNextPlayer;
+$("settingsCheckUpdateBtn").onclick = checkForUpdate;
 $("navStats").onclick = () => showView("statsView");
+$("navSettings").onclick = () => showView("settingsView");
 $("rematchBtn").onclick = () => { setupMode="single"; startSetup("single", rematchPlayerIds); };
 $("nextTournamentGameBtn").onclick = () => {
   if(!tournament) return;
@@ -677,6 +851,7 @@ $("endTournamentBtn").onclick = endTournamentNight;
 $("quitGameBtn").onclick = () => {
   if(confirm("Opravdu ukončit rozehranou hru?")){
     game = null;
+    clearActiveGame();
     showView("homeView");
   }
 };
@@ -685,11 +860,61 @@ $("clearHistoryBtn").onclick = () => {
   if(confirm("Smazat celou historii her?")){
     history = [];
     save(STORAGE.history, history);
+    tournament = null;
+    save("molkky.tournament.v1", null);
     renderHome();
   }
 };
 
-applyTheme(theme);
+document.querySelectorAll("[data-theme-mode]").forEach(b=>b.onclick=()=>applyThemeMode(b.dataset.themeMode));
+document.querySelectorAll("[data-entry-default]").forEach(b=>b.onclick=()=>{
+  appSettings.defaultEntryMode=b.dataset.entryDefault;
+  entryMode=appSettings.defaultEntryMode;
+  saveAppSettings(); renderSettings();
+});
+document.querySelectorAll("[data-accent]").forEach(b=>b.onclick=()=>{
+  appSettings.accent=b.dataset.accent;
+  saveAppSettings(); renderSettings();
+});
+$("targetScoreSetting").onchange=()=>{
+  appSettings.targetScore=Math.min(100,Math.max(20,Number($("targetScoreSetting").value)||50));
+  appSettings.bustReset=Math.min(appSettings.bustReset,appSettings.targetScore-1);
+  saveAppSettings(); renderSettings();
+};
+$("missLimitSetting").onchange=()=>{
+  appSettings.missLimit=Math.min(9,Math.max(0,Number($("missLimitSetting").value)||0));
+  saveAppSettings(); renderSettings();
+};
+$("bustEnabledSetting").onchange=()=>{appSettings.bustEnabled=$("bustEnabledSetting").checked;saveAppSettings();renderSettings();};
+$("bustResetSetting").onchange=()=>{
+  appSettings.bustReset=Math.min(Math.max(0,Number($("bustResetSetting").value)||25),appSettings.targetScore-1);
+  saveAppSettings(); renderSettings();
+};
+$("autoAdvanceSetting").onchange=()=>{appSettings.autoAdvance=$("autoAdvanceSetting").checked;saveAppSettings();};
+$("vibrationSetting").onchange=()=>{appSettings.vibration=$("vibrationSetting").checked;saveAppSettings();};
+$("soundSetting").onchange=()=>{appSettings.sound=$("soundSetting").checked;saveAppSettings();};
+$("settingsClearHistoryBtn").onclick=()=>{
+  if(confirm("Smazat celou historii her?")){
+    history=[]; save(STORAGE.history,history);
+    tournament=null; save("molkky.tournament.v1",null);
+    renderSettings();
+  }
+};
+$("resetSettingsBtn").onclick=()=>{
+  if(confirm("Obnovit výchozí nastavení aplikace?")){
+    appSettings={...DEFAULT_SETTINGS,themeMode:"light",accent:"#3f6f35",targetScore:50,missLimit:3,bustEnabled:true,bustReset:25,defaultEntryMode:"pins",autoAdvance:true,vibration:true,sound:false};
+    saveAppSettings(); applyTheme("light"); entryMode="pins"; renderSettings();
+  }
+};
+
+if(window.matchMedia){
+  const mq=window.matchMedia("(prefers-color-scheme: dark)");
+  const onSystemTheme=()=>{if(appSettings.themeMode==="system") applyTheme(physicalThemeFor("system"));};
+  if(mq.addEventListener) mq.addEventListener("change",onSystemTheme); else if(mq.addListener) mq.addListener(onSystemTheme);
+}
+applyAccent(appSettings.accent);
+entryMode=appSettings.defaultEntryMode;
+applyTheme(physicalThemeFor(appSettings.themeMode));
 renderHome();
 showView("homeView");
 
