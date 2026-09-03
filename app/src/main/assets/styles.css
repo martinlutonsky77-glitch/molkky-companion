@@ -410,3 +410,54 @@ html[data-theme="dark"] .pin.selected .molkky-pin-svg{filter:brightness(1.05) sa
 @media(max-width:520px){
   .molkky-pin-svg.front-facing{width:57px;height:92px}
 }
+
+/* v1.7.7 – actual 3D solid projected from supplied math model */
+.molkky-pin-svg.model3d{width:66px;height:104px;display:block;overflow:visible}
+.pin.selected .molkky-pin-svg.model3d{transform:translateY(-4px) scale(1.045)}
+@media(max-width:520px){.molkky-pin-svg.model3d{width:59px;height:94px}}
+
+
+/* v1.7.7 – robust bottom safe area / Android gesture navigation */
+:root{
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+/* Main scrollable content always stays clear of Android/iOS navigation areas. */
+.app-shell{
+  padding-top: max(18px, calc(12px + var(--safe-top))) !important;
+  padding-right: max(16px, calc(10px + var(--safe-right))) !important;
+  padding-bottom: max(48px, calc(28px + var(--safe-bottom))) !important;
+  padding-left: max(16px, calc(10px + var(--safe-left))) !important;
+  min-height: 100dvh;
+  box-sizing: border-box;
+}
+
+/* Extra reserve on the last visible card/control group. */
+.view.active > :last-child{
+  margin-bottom: max(8px, var(--safe-bottom));
+}
+
+/* Dialogs also respect the system navigation area. */
+dialog{
+  max-height: calc(100dvh - max(24px, var(--safe-top)) - max(24px, var(--safe-bottom))) !important;
+  box-sizing: border-box;
+}
+dialog form{
+  padding-bottom: max(18px, calc(12px + var(--safe-bottom))) !important;
+}
+
+/* Bottom action rows/buttons must never sit under gesture navigation. */
+.throw-actions,
+.dialog-actions,
+.settings-footer{
+  scroll-margin-bottom: max(56px, calc(36px + var(--safe-bottom)));
+}
+
+/* Fallback for browsers/WebViews without dynamic viewport units. */
+@supports not (height: 100dvh){
+  .app-shell{min-height:100vh}
+  dialog{max-height:calc(100vh - 48px)}
+}

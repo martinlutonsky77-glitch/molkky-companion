@@ -1,0 +1,12 @@
+Mölkky Companion v1.7.7
+- Kuželky se vykreslují z reálné 3D triangulované sítě podle dodaného modelu.
+- r=2,75 cm, H=15 cm, řez 45°, h0=12,25 cm, nízká strana 9,5 cm.
+- Těleso je otočeno +90° kolem osy z.
+- Kamera je mírně nad a před kuželkou, takže číslovaná řezná plocha směřuje k hráči, ale zůstává zřetelně šikmá.
+- Číslo je promítnuté přímo do roviny řezu.
+- Zachované portréty, nastavení, větší horní ikony, Undo, ELO, Head-to-Head, turnajová noc a updater.
+- versionCode 16 / versionName 1.7.7.
+
+- Doplněná robustní spodní safe area pro Android gestickou navigaci a systémovou lištu.
+- Obsah, dialogy a spodní ovládací prvky se drží nad systémovou navigací.
+- viewport-fit=cover + env(safe-area-inset-*) + fallback pro starší WebView.

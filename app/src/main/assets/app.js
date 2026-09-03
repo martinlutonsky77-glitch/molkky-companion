@@ -1,7 +1,7 @@
 const UPDATE_CONFIG = {
   owner: "martinlutonsky77-glitch",
   repo: "molkky-companion",
-  currentVersion: "1.7.6"
+  currentVersion: "1.7.7"
 };
 
 
@@ -58,92 +58,82 @@ function playerIdentity(p, subtitle=""){
    standard diameter 5.5 cm, high side 15 cm, low side 9.5 cm, 45° cut.
    SVG silhouette follows those proportions instead of faking a cylinder lid. */
 function molkkyPinSvg(n){
-  /*
-    Mathematical basis:
-      r = 2.75 cm
-      H = 15.0 cm
-      alpha = 45°
-      h0 = H - r*tan(alpha) = 12.25 cm
-      h(x) = h0 + x*tan(alpha)
+  const r=2.75, H=15.0, alpha=Math.PI/4, k=Math.tan(alpha), h0=H-r*k, seg=24;
 
-    We rotate the pin +90° around the z-axis so the slope direction points
-    toward the viewer. In orthographic front projection the rim of the
-    45° cut projects as:
-      X = r*cos(t)
-      Z = h0 + r*sin(t)
-    i.e. a circle. The SVG adds only a small perspective squash for depth.
-  */
-  const r=2.75, H=15, alpha=Math.PI/4;
-  const h0=H-r*Math.tan(alpha);       // 12.25
-  const minH=h0-r*Math.tan(alpha);    // 9.5
+  const rot=p=>[-p[1],p[0],p[2]];
+  const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+  const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+  const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+  const norm=a=>{const q=Math.hypot(a[0],a[1],a[2])||1;return[a[0]/q,a[1]/q,a[2]/q];};
 
-  const cx=36;
-  const faceRx=24;
-  const faceRy=21;                    // slight perspective squash of exact circular projection
-  const faceCy=30;
-  const bodyTop=faceCy+6;
-  const bodyBottom=114;
+  const cam=[0,-24,18], target=[0,0,7.0], up0=[0,0,1];
+  const fwd=norm(sub(target,cam));
+  const right=norm(cross(fwd,up0));
+  const up=norm(cross(right,fwd));
+  const focal=76, cx=36, cy=60;
 
-  return `<svg class="molkky-pin-svg front-facing" viewBox="0 0 72 124" role="img" aria-label="Kuželka ${n}"
-      data-radius="${r}" data-height="${H}" data-min-height="${minH.toFixed(2)}" data-cut-angle="45" data-rotation-z="90">
-    <defs>
-      <linearGradient id="woodBody${n}" x1="0" x2="1">
-        <stop offset="0" stop-color="#8c5121"/>
-        <stop offset=".16" stop-color="#b96f2d"/>
-        <stop offset=".38" stop-color="#e0a952"/>
-        <stop offset=".52" stop-color="#f1ca78"/>
-        <stop offset=".69" stop-color="#d69343"/>
-        <stop offset=".86" stop-color="#ab6328"/>
-        <stop offset="1" stop-color="#77401a"/>
-      </linearGradient>
-      <radialGradient id="cutFace${n}" cx="43%" cy="38%" r="72%">
-        <stop offset="0" stop-color="#f6daa0"/>
-        <stop offset=".52" stop-color="#e8bd77"/>
-        <stop offset="1" stop-color="#bd7938"/>
-      </radialGradient>
-      <linearGradient id="bodyGlow${n}" x1="0" x2="1">
-        <stop offset="0" stop-color="#fff" stop-opacity="0"/>
-        <stop offset=".48" stop-color="#fff" stop-opacity=".18"/>
-        <stop offset=".62" stop-color="#fff" stop-opacity=".06"/>
-        <stop offset="1" stop-color="#fff" stop-opacity="0"/>
-      </linearGradient>
-      <filter id="pinShadow${n}" x="-50%" y="-30%" width="200%" height="190%">
-        <feDropShadow dx="0" dy="6" stdDeviation="4.5" flood-color="#000" flood-opacity=".24"/>
-      </filter>
-    </defs>
+  function project(p){
+    const q=sub(rot(p),cam);
+    const X=dot(q,right), Y=dot(q,up), Z=dot(q,fwd);
+    const s=focal/Math.max(1,Z);
+    return {x:cx+X*s,y:cy-Y*s,z:Z};
+  }
+  function woodShade(v,top=false){
+    const lo=top?[178,112,48]:[126,70,25];
+    const hi=top?[246,211,145]:[238,184,92];
+    const a=Math.max(0,Math.min(1,v));
+    const rgb=lo.map((x,i)=>Math.round(x+(hi[i]-x)*a));
+    return `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+  }
 
-    <g filter="url(#pinShadow${n})">
-      <!-- Cylindrical body behind the cut face -->
-      <path d="M12 ${bodyTop} Q12 ${faceCy+14} 16 ${faceCy+19}
-               L16 ${bodyBottom-7} Q17 ${bodyBottom} 25 ${bodyBottom+2}
-               L47 ${bodyBottom+2} Q55 ${bodyBottom} 56 ${bodyBottom-7}
-               L56 ${faceCy+19} Q60 ${faceCy+14} 60 ${bodyTop} Z"
-            fill="url(#woodBody${n})" stroke="#704018" stroke-width="1.2"/>
+  const verts=[[0,0,0],[0,0,h0]];
+  for(let i=0;i<seg;i++){
+    const t=2*Math.PI*i/seg;
+    const x=r*Math.cos(t), y=r*Math.sin(t), z=h0+k*x;
+    verts.push([x,y,0],[x,y,z]);
+  }
 
-      <!-- Birch grain on cylindrical body -->
-      <path d="M21 49C19 67 22 89 21 111
-               M30 46C29 66 32 88 30 114
-               M42 45C40 65 44 91 42 114
-               M51 49C49 69 52 91 51 110"
-            fill="none" stroke="#7f4c22" stroke-opacity=".24" stroke-width="1.15"/>
-      <path d="M23 49C24 72 25 94 25 112 M38 46C38 72 39 96 39 114"
-            fill="none" stroke="url(#bodyGlow${n})" stroke-width="3"/>
+  const faces=[];
+  for(let i=0;i<seg;i++){
+    const j=(i+1)%seg,b0=2+2*i,t0=3+2*i,b1=2+2*j,t1=3+2*j;
+    faces.push({i:[0,b1,b0],kind:"bottom"});
+    faces.push({i:[b0,b1,t1],kind:"side"});
+    faces.push({i:[b0,t1,t0],kind:"side"});
+    faces.push({i:[1,t0,t1],kind:"top"});
+  }
 
-      <!-- The 45° cut face after +90° rotation around z, presented to viewer -->
-      <ellipse cx="${cx}" cy="${faceCy}" rx="${faceRx}" ry="${faceRy}"
-               fill="url(#cutFace${n})" stroke="#704018" stroke-width="1.35"/>
+  const light=norm([-0.5,-0.7,0.55]);
+  const polys=[];
+  for(const f of faces){
+    const A=rot(verts[f.i[0]]),B=rot(verts[f.i[1]]),C=rot(verts[f.i[2]]);
+    const nrm=norm(cross(sub(B,A),sub(C,A)));
+    if(dot(nrm,fwd)>=0) continue;
+    const pa=project(verts[f.i[0]]),pb=project(verts[f.i[1]]),pc=project(verts[f.i[2]]);
+    const d=(pa.z+pb.z+pc.z)/3;
+    const lit=0.45+0.55*Math.max(0,dot(nrm,light));
+    polys.push({
+      d,
+      kind:f.kind,
+      pts:`${pa.x.toFixed(2)},${pa.y.toFixed(2)} ${pb.x.toFixed(2)},${pb.y.toFixed(2)} ${pc.x.toFixed(2)},${pc.y.toFixed(2)}`,
+      fill:woodShade(f.kind==="top"?0.58+0.35*lit:0.25+0.72*lit,f.kind==="top")
+    });
+  }
+  polys.sort((a,b)=>b.d-a.d);
+  const mesh=polys.map(p=>`<polygon points="${p.pts}" fill="${p.fill}" stroke="${p.kind==="top"?"#6e3d17":"rgba(91,48,18,.22)"}" stroke-width="${p.kind==="top"?"0.65":"0.25"}"/>`).join("");
 
-      <!-- Growth rings on cut surface -->
-      <ellipse cx="${cx-2}" cy="${faceCy+1}" rx="${faceRx-6}" ry="${faceRy-5}"
-               fill="none" stroke="#a76a31" stroke-opacity=".22" stroke-width="1"/>
-      <ellipse cx="${cx-3}" cy="${faceCy+2}" rx="${faceRx-12}" ry="${faceRy-10}"
-               fill="none" stroke="#9a602b" stroke-opacity=".18" stroke-width="1"/>
-      <path d="M18 31 Q36 16 55 28 M18 37 Q36 23 55 34"
-            fill="none" stroke="#9a602b" stroke-opacity=".16" stroke-width="1"/>
+  const C=[0,0,h0], ex=norm([1,0,k]), ey=[0,1,0], s=1.2;
+  const pC=project(C), pX=project([C[0]+ex[0]*s,C[1]+ex[1]*s,C[2]+ex[2]*s]), pY=project([C[0]+ey[0]*s,C[1]+ey[1]*s,C[2]+ey[2]*s]);
+  const ax=(pX.x-pC.x)/s, ay=(pX.y-pC.y)/s, bx=(pY.x-pC.x)/s, by=(pY.y-pC.y)/s;
+  const mat=`matrix(${ax.toFixed(4)} ${ay.toFixed(4)} ${bx.toFixed(4)} ${by.toFixed(4)} ${pC.x.toFixed(2)} ${pC.y.toFixed(2)})`;
 
-      <text x="${cx}" y="${faceCy+2}" text-anchor="middle" dominant-baseline="middle"
-            font-family="system-ui,-apple-system,'Segoe UI',sans-serif"
-            font-size="${n>=10?21:24}" font-weight="900" fill="#24140a">${n}</text>
+  return `<svg class="molkky-pin-svg model3d" viewBox="0 0 72 124" role="img" aria-label="Kuželka ${n}"
+    data-radius="${r}" data-height="${H}" data-cut-angle="45" data-rotation-z="90">
+    <defs><filter id="meshShadow${n}" x="-45%" y="-30%" width="190%" height="190%"><feDropShadow dx="0" dy="5" stdDeviation="3.5" flood-color="#000" flood-opacity=".24"/></filter></defs>
+    <g filter="url(#meshShadow${n})">${mesh}</g>
+    <g transform="${mat}">
+      <text x="0" y="0" text-anchor="middle" dominant-baseline="central"
+        font-family="system-ui,-apple-system,'Segoe UI',sans-serif"
+        font-size="${n>=10?1.65:1.95}" font-weight="900" fill="#241309">${n}</text>
     </g>
   </svg>`;
 }
@@ -274,7 +264,7 @@ function renderSettings(){
   $("autoAdvanceSetting").checked=!!appSettings.autoAdvance;
   $("vibrationSetting").checked=!!appSettings.vibration;
   $("soundSetting").checked=!!appSettings.sound;
-  $("appVersionText").textContent=`v${UPDATE_CONFIG.currentVersion} (build 15)`;
+  $("appVersionText").textContent=`v${UPDATE_CONFIG.currentVersion} (build 16)`;
   $("avatarSettingsList").innerHTML = players.length ? players.map(p=>`
     <div class="avatar-setting-row">
       ${playerIdentity(p)}
