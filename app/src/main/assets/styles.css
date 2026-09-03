@@ -116,24 +116,94 @@ html[data-theme="dark"] .icon-btn{box-shadow:0 4px 14px rgba(0,0,0,.25)}
 @media(max-width:520px){.wood-pin{width:42px!important;height:58px!important}.player-avatar{width:42px;height:42px;flex-basis:42px}}
 
 
-/* v1.7 clean UI + safe areas */
-.app-shell{
-  padding-top:calc(28px + env(safe-area-inset-top))!important;
-  padding-right:calc(16px + env(safe-area-inset-right))!important;
-  padding-bottom:calc(40px + env(safe-area-inset-bottom))!important;
-  padding-left:calc(16px + env(safe-area-inset-left))!important;
+/* v1.6.1 – realistic Mölkky slanted-cut pins */
+.wood-pin{
+  width:48px!important;
+  height:70px!important;
+  border-radius:9px 9px 11px 11px!important;
+  position:relative!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  overflow:visible!important;
+  background-image:
+    linear-gradient(90deg,rgba(75,44,22,.13) 0 2%,transparent 2% 15%,rgba(255,255,255,.09) 15% 17%,transparent 17% 45%,rgba(89,52,27,.10) 45% 47%,transparent 47% 73%,rgba(255,255,255,.07) 73% 75%,transparent 75% 100%),
+    linear-gradient(90deg,#8f572d 0%,#b8753b 12%,#d79b57 28%,#efc77e 48%,#e4b36d 64%,#b7773e 84%,#87502a 100%)!important;
+  box-shadow:
+    inset 6px 0 8px rgba(255,255,255,.12),
+    inset -7px 0 9px rgba(66,38,19,.2),
+    0 8px 9px rgba(55,34,18,.24)!important;
 }
-.topbar{align-items:center!important;min-height:58px}
-.topbar h1{line-height:1.05}
-.top-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
-.top-icon{
-  width:50px!important;height:50px!important;min-width:50px!important;min-height:50px!important;
-  font-size:27px!important;border-radius:50%!important;padding:0!important;
-  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+
+.wood-pin:before{
+  content:""!important;
+  position:absolute!important;
+  left:-1px!important;
+  right:-1px!important;
+  top:-11px!important;
+  height:25px!important;
+  border-radius:52% 48% 46% 54% / 55% 54% 46% 45%!important;
+  background:
+    radial-gradient(ellipse at 42% 40%,rgba(255,255,255,.28) 0 10%,transparent 11%),
+    repeating-radial-gradient(ellipse at 48% 45%,#efd092 0 2px,#e5bc78 2px 4px,#d6a660 4px 6px)!important;
+  border:1px solid rgba(91,53,25,.32)!important;
+  box-shadow:
+    inset 0 2px 4px rgba(255,255,255,.35),
+    inset 0 -2px 3px rgba(112,68,32,.18),
+    0 2px 2px rgba(68,40,19,.14)!important;
+  transform:skewY(-12deg) rotate(-3deg)!important;
+  transform-origin:center!important;
 }
-#themeToggleIcon{font-size:29px;line-height:1}
-.settings-head{padding-top:4px}
-.settings-card h3{margin:5px 0 14px}
+
+.wood-pin:after{
+  content:""!important;
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  top:2px!important;
+  height:16px!important;
+  background:linear-gradient(176deg,rgba(244,209,145,.52) 0 42%,rgba(143,87,45,.10) 43% 100%)!important;
+  clip-path:polygon(0 10%,100% 0,100% 100%,0 100%)!important;
+  opacity:.52!important;
+  pointer-events:none!important;
+}
+
+.pin-number{
+  position:absolute!important;
+  z-index:4!important;
+  top:-8px!important;
+  left:50%!important;
+  transform:translateX(-50%) rotate(-3deg)!important;
+  width:34px!important;
+  height:26px!important;
+  display:grid!important;
+  place-items:center!important;
+  font-size:20px!important;
+  line-height:1!important;
+  font-weight:950!important;
+  color:#27170d!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.42)!important;
+}
+
+.pin.selected .wood-pin{
+  transform:translateY(-3px) rotate(-1deg)!important;
+  filter:saturate(1.08) brightness(1.04)!important;
+}
+
+html[data-theme="dark"] .wood-pin{
+  filter:saturate(.92) brightness(.91);
+}
+
+@media(max-width:520px){
+  .wood-pin{width:43px!important;height:63px!important}
+  .wood-pin:before{top:-10px!important;height:23px!important}
+  .pin-number{top:-8px!important;font-size:19px!important}
+}
+
+
+/* v1.7 – settings */
+.settings-card h3{margin:4px 0 14px}
+.settings-title{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .setting-block{padding:14px 0;border-top:1px solid var(--line)}
 .setting-block:first-of-type{border-top:0;padding-top:4px}
 .setting-label{display:block;font-weight:900;margin-bottom:9px}
@@ -158,16 +228,80 @@ html[data-theme="dark"] .icon-btn{box-shadow:0 4px 14px rgba(0,0,0,.25)}
 .avatar-controls{display:flex;align-items:center;gap:6px}
 .avatar-change{padding:8px 10px;font-size:13px}
 .version-box{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding:13px 14px;border-radius:14px;background:var(--surface-2)}
+.version-box strong{font-size:15px}
 .settings-footer{text-align:center;color:var(--muted);font-size:12px;font-weight:800;padding:8px 0 20px}
-.settings-gap{margin-top:9px}
 .next-player-btn{margin-top:10px}
 button:disabled{opacity:.42;cursor:default}
 html{accent-color:var(--primary)}
 
-/* Actual Mölkky silhouette: clear diagonal cut and number on the cut face */
+@media(max-width:520px){
+  .top-actions{gap:1px}.top-actions .ghost{padding:8px 7px;font-size:13px}
+  .segmented.three{grid-template-columns:1fr}
+  .avatar-setting-row{align-items:flex-start;flex-direction:column}
+  .avatar-controls{width:100%}.avatar-change{flex:1}
+}
+
+/* v1.7.1 – larger top navigation icons */
+.topbar .top-actions .icon-btn{width:52px;height:52px;min-width:52px;min-height:52px;border-radius:50%;font-size:27px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+.topbar .top-actions #themeToggleIcon{font-size:29px;line-height:1}
+.topbar .top-actions #navStats{width:52px;height:52px;min-width:52px;min-height:52px;padding:0;font-size:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center}
+.topbar .top-actions #navStats::before{content:"▥";font-size:29px;line-height:1;font-weight:900}
+@media(max-width:520px){.topbar .top-actions .icon-btn,.topbar .top-actions #navStats{width:48px;height:48px;min-width:48px;min-height:48px}.topbar .top-actions #themeToggleIcon,.topbar .top-actions #navStats::before{font-size:27px}}
+
+/* v1.7.2 – authentic Mölkky pin silhouette: diagonal cut with number on cut face */
+.pin3d{
+  position:relative;
+  width:62px;
+  height:92px;
+  margin:8px auto 3px;
+  border-radius:7px 7px 15px 15px;
+  background:linear-gradient(90deg,#9b5d25 0%,#d79a4c 22%,#f0c574 48%,#c57d34 76%,#89501f 100%);
+  box-shadow:inset 7px 0 9px rgba(255,255,255,.16),inset -7px 0 9px rgba(74,35,9,.18),0 9px 12px rgba(0,0,0,.20);
+  transform:perspective(180px) rotateY(-2deg);
+  clip-path:polygon(0 21%,100% 0,100% 100%,0 100%);
+  overflow:visible;
+}
+.pin3d::before{
+  content:"";
+  position:absolute;
+  left:-1px;
+  top:1px;
+  width:64px;
+  height:31px;
+  border-radius:50%;
+  background:linear-gradient(155deg,#f7d994 0%,#e3ad5c 46%,#b66d2d 100%);
+  border:1px solid rgba(103,57,21,.45);
+  box-shadow:inset 0 4px 5px rgba(255,255,255,.35),inset 0 -3px 4px rgba(101,54,18,.16);
+  transform:rotate(-10deg) skewX(-5deg);
+  transform-origin:center;
+}
+.pin3d::after{
+  content:attr(data-num);
+  position:absolute;
+  z-index:3;
+  top:4px;
+  left:0;
+  width:100%;
+  text-align:center;
+  font-size:23px;
+  line-height:28px;
+  font-weight:900;
+  color:#2b1a0c;
+  text-shadow:0 1px 0 rgba(255,255,255,.35);
+  transform:rotate(-8deg);
+}
+.pin3d .pin-number{display:none!important}
+.pin-btn{min-height:132px}
+.pin-btn.selected .pin3d{filter:brightness(1.08);transform:perspective(180px) rotateY(-2deg) translateY(-2px)}
+
+
+/* v1.7.3 – final Mölkky pin geometry, applied to the real .wood-pin element */
 .wood-pin{
-  width:50px!important;height:72px!important;position:relative!important;
-  border-radius:5px 5px 11px 11px!important;overflow:visible!important;
+  width:50px!important;
+  height:72px!important;
+  position:relative!important;
+  border-radius:5px 5px 11px 11px!important;
+  overflow:visible!important;
   clip-path:polygon(0 22%,100% 0,100% 100%,0 100%)!important;
   background:
     linear-gradient(90deg,rgba(75,43,18,.13) 0 3%,transparent 3% 19%,rgba(255,255,255,.10) 19% 22%,transparent 22% 51%,rgba(89,50,20,.10) 51% 54%,transparent 54% 79%,rgba(255,255,255,.08) 79% 82%,transparent 82%),
@@ -175,31 +309,89 @@ html{accent-color:var(--primary)}
   box-shadow:inset 6px 0 8px rgba(255,255,255,.14),inset -7px 0 9px rgba(63,34,12,.20),0 8px 9px rgba(45,29,17,.24)!important;
 }
 .wood-pin:before{
-  content:""!important;position:absolute!important;z-index:2!important;
-  left:-1px!important;top:-4px!important;width:52px!important;height:24px!important;
+  content:""!important;
+  position:absolute!important;
+  z-index:2!important;
+  left:-1px!important;
+  top:-4px!important;
+  width:52px!important;
+  height:24px!important;
   border-radius:50%!important;
-  background:repeating-radial-gradient(ellipse at 45% 50%,#f2d28f 0 2px,#e7bd72 2px 4px,#d6a15a 4px 6px)!important;
+  background:
+    repeating-radial-gradient(ellipse at 45% 50%,#f2d28f 0 2px,#e7bd72 2px 4px,#d6a15a 4px 6px)!important;
   border:1px solid rgba(86,48,20,.34)!important;
-  transform:rotate(-11deg)!important;transform-origin:center!important;
+  transform:rotate(-11deg)!important;
+  transform-origin:center!important;
   box-shadow:inset 0 2px 4px rgba(255,255,255,.34),inset 0 -2px 3px rgba(91,50,18,.18)!important;
 }
 .wood-pin:after{display:none!important}
 .pin-number{
-  position:absolute!important;z-index:5!important;top:-1px!important;left:50%!important;
-  transform:translateX(-50%) rotate(-10deg)!important;width:32px!important;height:23px!important;
-  margin:0!important;display:grid!important;place-items:center!important;font-size:20px!important;
-  line-height:1!important;font-weight:950!important;color:#27170d!important;text-shadow:0 1px 0 rgba(255,255,255,.4)!important;
+  position:absolute!important;
+  z-index:5!important;
+  top:-1px!important;
+  left:50%!important;
+  transform:translateX(-50%) rotate(-10deg)!important;
+  width:32px!important;
+  height:23px!important;
+  margin:0!important;
+  display:grid!important;
+  place-items:center!important;
+  font-size:20px!important;
+  line-height:1!important;
+  font-weight:950!important;
+  color:#27170d!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.4)!important;
 }
-.pin.selected .wood-pin{transform:translateY(-3px)!important;filter:saturate(1.08) brightness(1.05)!important}
-
+.pin.selected .wood-pin{
+  transform:translateY(-3px)!important;
+  filter:saturate(1.08) brightness(1.05)!important;
+}
 @media(max-width:520px){
-  .app-shell{padding-top:calc(24px + env(safe-area-inset-top))!important}
-  .top-icon{width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important}
-  #themeToggleIcon{font-size:27px}
-  .segmented.three{grid-template-columns:1fr}
-  .avatar-setting-row{align-items:flex-start;flex-direction:column}
-  .avatar-controls{width:100%}.avatar-change{flex:1}
   .wood-pin{width:45px!important;height:65px!important}
   .wood-pin:before{width:47px!important;height:22px!important}
   .pin-number{font-size:19px!important}
+}
+
+
+/* v1.7.5 – user-supplied portrait system + parametric Mölkky pin visuals */
+.player-avatar{
+  overflow:hidden!important;
+  background:color-mix(in srgb,var(--surface-2) 82%,var(--primary) 18%)!important;
+}
+.player-avatar .portrait-svg{
+  width:100%!important;
+  height:100%!important;
+  display:block!important;
+}
+.avatar-setting-row .player-avatar{width:54px!important;height:54px!important;flex-basis:54px!important}
+
+.pin{
+  min-height:132px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:8px 4px!important;
+  overflow:hidden!important;
+}
+.molkky-pin-svg{
+  width:62px;
+  height:98px;
+  display:block;
+  overflow:visible;
+  transition:transform .13s ease,filter .13s ease;
+}
+.pin.selected .molkky-pin-svg{
+  transform:translateY(-4px) scale(1.035);
+  filter:saturate(1.08) brightness(1.05);
+}
+html[data-theme="dark"] .molkky-pin-svg{filter:brightness(.94) saturate(.96)}
+html[data-theme="dark"] .pin.selected .molkky-pin-svg{filter:brightness(1.05) saturate(1.08)}
+
+/* The old CSS pin is no longer used; keep it inert in case stale markup appears. */
+.wood-pin{display:none!important}
+.pin-mark{display:none!important}
+
+@media(max-width:520px){
+  .pin{min-height:116px!important}
+  .molkky-pin-svg{width:55px;height:88px}
 }

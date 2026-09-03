@@ -1,21 +1,27 @@
 Mölkky Companion v1.7.0
 
-Hlavní změny:
-- Nová obrazovka Nastavení.
-- Velké horní ikony: vzhled, statistiky, nastavení.
-- Opravený horní safe-area odstup na Androidu.
-- Světlý / tmavý / systémový vzhled + 7 barevných akcentů.
-- Nastavitelné cílové skóre, limit minutí a pravidlo přehození.
-- Výchozí zadávání Kuželky / Body.
-- Volba automatického přechodu na dalšího hráče.
-- Volitelné vibrace a zvuky.
-- Změna avataru hráčů.
+Nové Nastavení:
+- Světlý / tmavý / podle telefonu.
+- Rychlé přepnutí světlého/tmavého vzhledu zůstává v horní ikoně.
+- 7 barevných akcentů.
+- Cílové skóre hry.
+- Nastavitelný limit minutí; 0 = bez vyřazení.
+- Překročení cíle lze zapnout/vypnout a nastavit hodnotu návratu.
+- Výchozí zadávání: Kuželky / Body.
+- Automatický přechod na dalšího hráče lze vypnout.
+- Volitelné vibrace a zvuk.
+- Změna avataru každého hráče.
+- Kontrola aktualizací přímo v Nastavení.
+- Viditelná verze aplikace: v1.7.0 / build 9.
 - Obnovení rozehrané hry po zavření aplikace.
-- Kontrola aktualizace přímo v Nastavení.
-- Viditelná verze v1.7.0 / build 8.
-- Opraveno vytváření prázdné Turnajové noci (0 her).
-- Přepracovaná grafika Mölkky kuželek se šikmým řezem.
+
+Zachováno:
+- Rychlé ☀/☾ přepnutí nahoře.
+- 3D Mölkky kuželky se šikmým řezem.
+- Vtipná ikona Minutí.
+- ELO, Head-to-Head, Turnajová noc, historie, Undo.
+- GitHub updater.
 
 Technicky:
-- versionCode 8
+- versionCode 9
 - versionName 1.7.0

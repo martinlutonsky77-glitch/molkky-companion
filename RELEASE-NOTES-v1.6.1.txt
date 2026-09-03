@@ -1,0 +1,8 @@
+Mölkky Companion v1.6.1
+
+- Kuželky mají tvar skutečných Mölkky kuželek.
+- Horní plocha je šikmo seříznutá.
+- Číslo je přímo na seříznuté ploše.
+- Přidána kresba dřeva a prostorové stínování.
+- Zachovány avatary, světlý/tmavý režim a ikona minutí.
+- versionCode 8 / versionName 1.6.1.

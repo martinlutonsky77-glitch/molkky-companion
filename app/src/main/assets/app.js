@@ -1,7 +1,7 @@
 const UPDATE_CONFIG = {
   owner: "martinlutonsky77-glitch",
   repo: "molkky-companion",
-  currentVersion: "1.7.0"
+  currentVersion: "1.7.5"
 };
 
 
@@ -29,58 +29,71 @@ function readSettings(){
 let appSettings = readSettings();
 let theme = "light";
 
-const FACE_AVATARS = [
-  ["#f2c6a0","#4b2d1f","short","#355c9a"],["#f3c8a7","#d7a36b","long","#456b4b"],
-  ["#d9a679","#2c201d","curly","#8d4f2b"],["#f0bd97","#201a18","glasses","#31592a"],
-  ["#f3c9a8","#b77948","bob","#7a3d63"],["#b97652","#20160f","short","#2f6a65"],
-  ["#f1c5a3","#805033","cap","#a55b2c"],["#e4b18a","#40322a","waves","#475d87"],
-  ["#8a5438","#181311","curly","#8b5b38"],["#efc19e","#33241d","beard","#3b6f4e"],
-  ["#f0c5a5","#c18b5d","long","#355c9a"],["#c17c58","#2b201b","bob","#7d4e8f"],
-  ["#ecc0a0","#191919","short","#9a5538"],["#f4cbaa","#6b4b34","glasses","#3a716a"],
-  ["#a86443","#1b1816","beard","#364f6b"],["#f2c39f","#b46839","curly","#6b4a2f"],
-  ["#d89b73","#28201c","cap","#4e6d42"],["#f0bea0","#28221e","waves","#74435f"],
-  ["#74452f","#111111","short","#456b4b"],["#edc19f","#7f542f","beard","#9a6a2d"],
-  ["#f4c7a6","#31221c","long","#466aa0"],["#dca17a","#4a2a20","glasses","#93533d"],
-  ["#efc3a5","#d29a65","bob","#3f765f"],["#9b6041","#241a17","curly","#315b7d"],
-  ["#f3c8a7","#4d3729","cap","#6d4d83"],["#deb08b","#111111","beard","#3e7046"],
-  ["#f0c3a1","#9d5f34","waves","#a24f43"],["#7f4a32","#231814","long","#536c3e"],
-  ["#e8b28c","#554033","glasses","#426b8c"],["#f5caa8","#2a201a","curly","#7a5933"]
-];
+const PORTRAITS_API = window.MolkkyPortraits;
+const PORTRAIT_COUNT = PORTRAITS_API?.PORTRAITS?.length || 30;
 
-function stableIndex(id, n=FACE_AVATARS.length){
-  let h=0; for(const ch of String(id||"")) h=((h*31)+ch.charCodeAt(0))>>>0; return h%n;
-}
-function faceAvatarSvg(index){
-  const [skin,hair,style,shirt]=FACE_AVATARS[index%FACE_AVATARS.length];
-  const glasses=style==="glasses", beard=style==="beard", cap=style==="cap";
-  const longHair=["long","waves","bob"].includes(style), curly=style==="curly";
-  const hairBack=longHair
-    ? `<path d="M9 21c0-9 5-15 11-15s11 6 11 15v11H9z" fill="${hair}"/>`
-    : curly
-      ? `<g fill="${hair}"><circle cx="12" cy="14" r="5"/><circle cx="18" cy="10" r="5"/><circle cx="24" cy="11" r="5"/><circle cx="29" cy="16" r="5"/></g>`
-      : `<path d="M10 17c1-8 5-12 10-12 7 0 11 5 11 13-5-5-15-6-21-1z" fill="${hair}"/>`;
-  const capSvg=cap?`<path d="M10 13c3-7 16-8 21-1l-1 4H11z" fill="${shirt}"/><path d="M28 15h7" stroke="${shirt}" stroke-width="3" stroke-linecap="round"/>`:"";
-  const beardSvg=beard?`<path d="M13 24c1 8 5 11 8 11 5 0 8-4 9-11-4 4-13 5-17 0z" fill="${hair}" opacity=".92"/>`:"";
-  const glassesSvg=glasses?`<g fill="none" stroke="#2a2a2a" stroke-width="1.5"><rect x="12" y="19" width="7" height="5" rx="2"/><rect x="22" y="19" width="7" height="5" rx="2"/><path d="M19 21h3"/></g>`:"";
-  return `<svg viewBox="0 0 40 40" focusable="false" aria-hidden="true">
-    <circle cx="20" cy="20" r="20" fill="${shirt}" opacity=".12"/>
-    ${hairBack}<path d="M7 40c1-8 6-12 13-12s12 4 13 12z" fill="${shirt}"/>
-    <ellipse cx="20" cy="21" rx="10" ry="12" fill="${skin}"/>${capSvg}
-    <path d="M13 17c2-5 12-8 17-2" fill="none" stroke="${hair}" stroke-width="4" stroke-linecap="round"/>
-    <circle cx="16" cy="21" r="1.2" fill="#231b18"/><circle cx="24" cy="21" r="1.2" fill="#231b18"/>
-    <path d="M18 26c1.3 1 2.7 1 4 0" fill="none" stroke="#8c4f43" stroke-width="1.4" stroke-linecap="round"/>
-    ${beardSvg}${glassesSvg}</svg>`;
+function stableIndex(id, n=PORTRAIT_COUNT){
+  let h=0;
+  for(const ch of String(id||"")) h=((h*31)+ch.charCodeAt(0))>>>0;
+  return h%n;
 }
 function avatarIndexFor(p){
   const saved = players?.find?.(x => x.id === p?.id);
   const idx = Number(saved?.avatarIndex ?? p?.avatarIndex);
-  return Number.isInteger(idx) ? ((idx % FACE_AVATARS.length)+FACE_AVATARS.length)%FACE_AVATARS.length : stableIndex(p?.id);
+  return Number.isInteger(idx) ? ((idx % PORTRAIT_COUNT)+PORTRAIT_COUNT)%PORTRAIT_COUNT : stableIndex(p?.id);
 }
-function avatarMarkup(p, extraClass=""){
-  return `<span class="player-avatar ${extraClass}" aria-hidden="true">${faceAvatarSvg(avatarIndexFor(p))}</span>`;
+function portraitMarkup(p, extraClass=""){
+  const idx=avatarIndexFor(p);
+  const portrait=PORTRAITS_API?.PORTRAITS?.[idx];
+  if(!portrait) return `<span class="player-avatar ${extraClass}" aria-hidden="true"></span>`;
+  const svg=PORTRAITS_API.renderPortrait(portrait,{size:96,className:"portrait-svg",title:p?.name||portrait.name});
+  return `<span class="player-avatar ${extraClass}" aria-hidden="true">${svg}</span>`;
 }
+function avatarMarkup(p, extraClass=""){ return portraitMarkup(p,extraClass); }
 function playerIdentity(p, subtitle=""){
   return `<div class="player-identity">${avatarMarkup(p)}<div class="player-copy"><div class="player-name">${esc(p.name)}</div>${subtitle?`<small>${subtitle}</small>`:""}</div></div>`;
+}
+
+/* Mölkky pin geometry:
+   standard diameter 5.5 cm, high side 15 cm, low side 9.5 cm, 45° cut.
+   SVG silhouette follows those proportions instead of faking a cylinder lid. */
+function molkkyPinSvg(n){
+  return `<svg class="molkky-pin-svg" viewBox="0 0 72 112" role="img" aria-label="Kuželka ${n}">
+    <defs>
+      <linearGradient id="woodBody${n}" x1="0" x2="1">
+        <stop offset="0" stop-color="#8d5425"/>
+        <stop offset=".18" stop-color="#bd7836"/>
+        <stop offset=".43" stop-color="#edbe70"/>
+        <stop offset=".57" stop-color="#f4d18a"/>
+        <stop offset=".78" stop-color="#c67d37"/>
+        <stop offset="1" stop-color="#7c461d"/>
+      </linearGradient>
+      <linearGradient id="cutFace${n}" x1="0" y1="1" x2="1" y2="0">
+        <stop offset="0" stop-color="#d39a52"/>
+        <stop offset=".48" stop-color="#f3d493"/>
+        <stop offset="1" stop-color="#c27c39"/>
+      </linearGradient>
+      <filter id="pinShadow${n}" x="-40%" y="-30%" width="180%" height="180%">
+        <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000" flood-opacity=".22"/>
+      </filter>
+    </defs>
+    <g filter="url(#pinShadow${n})">
+      <!-- body silhouette: lower cut edge at left, higher cut edge at right -->
+      <path d="M13 48 L59 16 L59 98 Q58 105 50 108 L22 108 Q14 105 13 98 Z"
+            fill="url(#woodBody${n})" stroke="#75431d" stroke-width="1.2"/>
+      <!-- subtle birch grain -->
+      <path d="M21 51C18 69 21 86 20 101M31 39C29 61 33 82 31 105M44 29C42 48 46 73 44 104M54 21C52 45 56 70 54 99"
+            fill="none" stroke="#855126" stroke-opacity=".22" stroke-width="1.3"/>
+      <path d="M18 47 C25 34 48 15 59 16 C53 28 27 53 13 48 Z"
+            fill="url(#cutFace${n})" stroke="#75431d" stroke-width="1.2"/>
+      <path d="M21 44C31 38 40 29 50 21M27 46C38 38 45 30 55 21"
+            fill="none" stroke="#9d6630" stroke-opacity=".28" stroke-width="1"/>
+      <text x="36" y="36" text-anchor="middle" dominant-baseline="middle"
+            transform="rotate(-27 36 36)"
+            font-family="system-ui,-apple-system,'Segoe UI',sans-serif"
+            font-size="${n>=10?19:22}" font-weight="900" fill="#27170d">${n}</text>
+    </g>
+  </svg>`;
 }
 
 function applyAccent(color){
@@ -97,27 +110,27 @@ function applyTheme(next){
   theme = next === "dark" ? "dark" : "light";
   document.documentElement.dataset.theme = theme;
   const icon=$("themeToggleIcon"); if(icon) icon.textContent = theme === "dark" ? "☀" : "☾";
-  const meta=document.querySelector('meta[name="theme-color"]');
-  if(meta) meta.setAttribute('content', theme === "dark" ? '#0c120d' : '#f6f1e7');
+  const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.setAttribute('content', theme === "dark" ? '#0c120d' : '#f6f1e7');
 }
-function saveAppSettings(){
-  localStorage.setItem(APP_SETTINGS_KEY, JSON.stringify(appSettings));
-  localStorage.setItem(THEME_KEY, appSettings.themeMode === "system" ? physicalThemeFor("system") : appSettings.themeMode);
-  localStorage.setItem("molkky.entryMode", appSettings.defaultEntryMode);
-  applyAccent(appSettings.accent);
-}
-function applyThemeMode(mode){
+function applyThemeMode(mode, saveIt=true){
   appSettings.themeMode = ["light","dark","system"].includes(mode) ? mode : "light";
-  saveAppSettings();
+  if(saveIt) saveAppSettings(false);
   applyTheme(physicalThemeFor(appSettings.themeMode));
   updateSettingsControls();
 }
 function toggleTheme(){
   const explicit = theme === "dark" ? "light" : "dark";
   appSettings.themeMode = explicit;
-  saveAppSettings();
+  saveAppSettings(false);
   applyTheme(explicit);
   updateSettingsControls();
+}
+function saveAppSettings(rerender=true){
+  localStorage.setItem(APP_SETTINGS_KEY, JSON.stringify(appSettings));
+  localStorage.setItem(THEME_KEY, appSettings.themeMode === "system" ? physicalThemeFor("system") : appSettings.themeMode);
+  localStorage.setItem("molkky.entryMode", appSettings.defaultEntryMode);
+  applyAccent(appSettings.accent);
+  if(rerender && document.getElementById("settingsView")?.classList.contains("active")) renderSettings();
 }
 function gameFeedback(kind="throw"){
   if(appSettings.vibration && navigator.vibrate){
@@ -130,7 +143,7 @@ function gameFeedback(kind="throw"){
         const ctx=new Ctx(), osc=ctx.createOscillator(), gain=ctx.createGain();
         osc.connect(gain); gain.connect(ctx.destination);
         osc.frequency.value=kind==="win"?740:kind==="miss"?180:430;
-        gain.gain.setValueAtTime(.05,ctx.currentTime);
+        gain.gain.setValueAtTime(.055,ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.12);
         osc.start(); osc.stop(ctx.currentTime+.12);
       }
@@ -192,6 +205,7 @@ function showView(id){
   if(id === "statsView") renderStats();
   if(id === "settingsView") renderSettings();
 }
+
 function updateSettingsControls(){
   document.querySelectorAll("[data-theme-mode]").forEach(b=>b.classList.toggle("active", b.dataset.themeMode===appSettings.themeMode));
   document.querySelectorAll("[data-entry-default]").forEach(b=>b.classList.toggle("active", b.dataset.entryDefault===appSettings.defaultEntryMode));
@@ -200,16 +214,15 @@ function updateSettingsControls(){
 function renderSettings(){
   $("targetScoreSetting").value=appSettings.targetScore;
   $("missLimitSetting").value=appSettings.missLimit;
-  appSettings.bustReset=Math.min(Math.max(0,Number(appSettings.bustReset)||25),Math.max(0,(Number(appSettings.targetScore)||50)-1));
   $("bustEnabledSetting").checked=!!appSettings.bustEnabled;
+  appSettings.bustReset=Math.min(Math.max(0,Number(appSettings.bustReset)||25),Math.max(0,(Number(appSettings.targetScore)||50)-1));
   $("bustResetSetting").max=Math.max(0,(Number(appSettings.targetScore)||50)-1);
   $("bustResetSetting").value=appSettings.bustReset;
   $("bustResetRow").classList.toggle("setting-disabled",!appSettings.bustEnabled);
   $("autoAdvanceSetting").checked=!!appSettings.autoAdvance;
   $("vibrationSetting").checked=!!appSettings.vibration;
   $("soundSetting").checked=!!appSettings.sound;
-  $("appVersionText").textContent=`v${UPDATE_CONFIG.currentVersion} (build 8)`;
-
+  $("appVersionText").textContent=`v${UPDATE_CONFIG.currentVersion} (build 14)`;
   $("avatarSettingsList").innerHTML = players.length ? players.map(p=>`
     <div class="avatar-setting-row">
       ${playerIdentity(p)}
@@ -219,13 +232,14 @@ function renderSettings(){
         <button class="mini" data-avatar-next="${p.id}" aria-label="Další avatar">›</button>
       </div>
     </div>`).join("") : `<div class="muted">Nejdřív vytvoř hráče.</div>`;
+
   document.querySelectorAll("[data-avatar-next]").forEach(b=>b.onclick=()=>changeAvatar(b.dataset.avatarNext,1));
   document.querySelectorAll("[data-avatar-prev]").forEach(b=>b.onclick=()=>changeAvatar(b.dataset.avatarPrev,-1));
   updateSettingsControls();
 }
 function changeAvatar(id, delta){
   const p=players.find(x=>x.id===id); if(!p) return;
-  p.avatarIndex=(avatarIndexFor(p)+delta+FACE_AVATARS.length)%FACE_AVATARS.length;
+  p.avatarIndex=(avatarIndexFor(p)+delta+PORTRAIT_COUNT)%PORTRAIT_COUNT;
   save(STORAGE.players,players);
   renderSettings();
 }
@@ -236,12 +250,21 @@ function esc(s){
 function addPlayer(name){
   name = name.trim();
   if(!name) return;
-  const p = { id: crypto.randomUUID(), name, avatarIndex: Math.floor(Math.random()*FACE_AVATARS.length) };
+  const p = { id: crypto.randomUUID(), name, avatarIndex: Math.floor(Math.random()*PORTRAIT_COUNT) };
   players.push(p);
   save(STORAGE.players, players);
   return p;
 }
 function deletePlayer(id){
+  const saved=getSavedActiveGame();
+  if(saved?.players?.some(p=>p.id===id)){
+    alert("Hráče nelze smazat, protože je v rozehrané hře.");
+    return;
+  }
+  if(tournament?.gameIds?.length && tournament.playerIds?.includes(id)){
+    alert("Hráče nelze smazat během rozehrané turnajové noci.");
+    return;
+  }
   players = players.filter(p => p.id !== id);
   save(STORAGE.players, players);
   renderHome();
@@ -474,7 +497,7 @@ function currentPlayer(){ return game.players[game.turnIndex]; }
 
 function renderPins(){
   $("pinsGrid").innerHTML = Array.from({length:12},(_,i)=>i+1).map(n =>
-    `<button class="pin ${selectedPins.has(n)?"selected":""}" data-pin="${n}" aria-label="Kuželka ${n}"><span class="wood-pin"><span class="pin-number">${n}</span></span></button>`
+    `<button class="pin ${selectedPins.has(n)?"selected":""}" data-pin="${n}" aria-label="Kuželka ${n}">${molkkyPinSvg(n)}</button>`
   ).join("");
   document.querySelectorAll("[data-pin]").forEach(b => b.onclick = () => {
     const n = Number(b.dataset.pin);
@@ -521,11 +544,9 @@ function renderGame(){
   if(!game) return;
   game.targetScore = Number(game.targetScore)||50;
   game.missLimit = Number(game.missLimit ?? (game.threeMissRule?3:0))||0;
-  game.bustEnabled = game.bustEnabled !== false;
   game.bustReset = Math.min(Number(game.bustReset ?? 25), Math.max(0,game.targetScore-1));
+  game.bustEnabled = game.bustEnabled !== false;
   game.autoAdvance = game.autoAdvance !== false;
-  game.awaitingNext = !!game.awaitingNext;
-
   if(currentPlayer()?.eliminated && !game.awaitingNext) moveToNextPlayer();
   const p = currentPlayer();
   $("gameRound").textContent = `Kolo ${game.round}`;
@@ -870,42 +891,26 @@ document.querySelectorAll("[data-theme-mode]").forEach(b=>b.onclick=()=>applyThe
 document.querySelectorAll("[data-entry-default]").forEach(b=>b.onclick=()=>{
   appSettings.defaultEntryMode=b.dataset.entryDefault;
   entryMode=appSettings.defaultEntryMode;
-  saveAppSettings(); renderSettings();
+  saveAppSettings();
 });
 document.querySelectorAll("[data-accent]").forEach(b=>b.onclick=()=>{
   appSettings.accent=b.dataset.accent;
-  saveAppSettings(); renderSettings();
+  saveAppSettings();
 });
 $("targetScoreSetting").onchange=()=>{
   appSettings.targetScore=Math.min(100,Math.max(20,Number($("targetScoreSetting").value)||50));
   appSettings.bustReset=Math.min(appSettings.bustReset,appSettings.targetScore-1);
-  saveAppSettings(); renderSettings();
+  saveAppSettings();
 };
-$("missLimitSetting").onchange=()=>{
-  appSettings.missLimit=Math.min(9,Math.max(0,Number($("missLimitSetting").value)||0));
-  saveAppSettings(); renderSettings();
-};
-$("bustEnabledSetting").onchange=()=>{appSettings.bustEnabled=$("bustEnabledSetting").checked;saveAppSettings();renderSettings();};
+$("missLimitSetting").onchange=()=>{appSettings.missLimit=Math.min(9,Math.max(0,Number($("missLimitSetting").value)||0));saveAppSettings();};
+$("bustEnabledSetting").onchange=()=>{appSettings.bustEnabled=$("bustEnabledSetting").checked;saveAppSettings();};
 $("bustResetSetting").onchange=()=>{
   appSettings.bustReset=Math.min(Math.max(0,Number($("bustResetSetting").value)||25),appSettings.targetScore-1);
-  saveAppSettings(); renderSettings();
+  saveAppSettings();
 };
 $("autoAdvanceSetting").onchange=()=>{appSettings.autoAdvance=$("autoAdvanceSetting").checked;saveAppSettings();};
 $("vibrationSetting").onchange=()=>{appSettings.vibration=$("vibrationSetting").checked;saveAppSettings();};
 $("soundSetting").onchange=()=>{appSettings.sound=$("soundSetting").checked;saveAppSettings();};
-$("settingsClearHistoryBtn").onclick=()=>{
-  if(confirm("Smazat celou historii her?")){
-    history=[]; save(STORAGE.history,history);
-    tournament=null; save("molkky.tournament.v1",null);
-    renderSettings();
-  }
-};
-$("resetSettingsBtn").onclick=()=>{
-  if(confirm("Obnovit výchozí nastavení aplikace?")){
-    appSettings={...DEFAULT_SETTINGS,themeMode:"light",accent:"#3f6f35",targetScore:50,missLimit:3,bustEnabled:true,bustReset:25,defaultEntryMode:"pins",autoAdvance:true,vibration:true,sound:false};
-    saveAppSettings(); applyTheme("light"); entryMode="pins"; renderSettings();
-  }
-};
 
 if(window.matchMedia){
   const mq=window.matchMedia("(prefers-color-scheme: dark)");
@@ -913,7 +918,6 @@ if(window.matchMedia){
   if(mq.addEventListener) mq.addEventListener("change",onSystemTheme); else if(mq.addListener) mq.addListener(onSystemTheme);
 }
 applyAccent(appSettings.accent);
-entryMode=appSettings.defaultEntryMode;
 applyTheme(physicalThemeFor(appSettings.themeMode));
 renderHome();
 showView("homeView");

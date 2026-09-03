@@ -1,0 +1,4 @@
+Mölkky Companion v1.7.1
+- Zvětšené horní ikony režimu, statistik a nastavení.
+- Statistiky jsou ikonová zkratka.
+- versionCode 10 / versionName 1.7.1

@@ -1,0 +1,30 @@
+Mölkky Companion v1.7.5 — clean graphics + previous fixes
+
+Grafika
+- Kuželky 1–12 jsou nově SVG odvozené z parametrické geometrie Mölkky:
+  průměr 5,5 cm, vyšší strana 15 cm, nižší 9,5 cm, řez 45°.
+- Číslo je přímo na šikmé řezné ploše.
+- Odstraněná stará CSS „víčka“ kuželek.
+- Zapracovaná uživatelská sada 30 portrétů z portrety.js.
+- Portréty jsou konzistentní a hráč si je může měnit v Nastavení.
+- Vtipná přeškrtnutá kuželka pro Minutí zůstává zachovaná.
+
+Zachované funkce a předchozí opravy
+- světlý / tmavý / podle telefonu + rychlé přepnutí nahoře,
+- větší horní ikony režimu, statistik a nastavení,
+- barevné akcenty,
+- cílové skóre, limit minutí, pravidlo přehození a návratová hodnota,
+- zadávání Kuželky / Body,
+- automatický nebo ruční přechod na dalšího hráče,
+- Undo,
+- obnovení rozehrané hry,
+- vibrace a zvuk,
+- historie, ELO, Head-to-Head a turnajová noc,
+- oprava prázdné turnajové noci (0 her),
+- ochrana aktivních hráčů před smazáním,
+- kontrola aktualizace z GitHub Releases,
+- viditelná verze v Nastavení.
+
+Technicky
+- versionName 1.7.5
+- versionCode 14

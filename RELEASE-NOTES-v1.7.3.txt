@@ -1,0 +1,11 @@
+Mölkky Companion v1.7.3 – audit/fix release
+
+Opravy po kompletní kontrole:
+- Opravená skutečná grafika kuželek: styl se nyní aplikuje na element .wood-pin, který aplikace reálně vykresluje.
+- Turnajová noc se už neuloží jako „0 her“ jen po otevření setupu.
+- Starý prázdný turnaj se automaticky odstraní.
+- Opravené číslo buildu v Nastavení.
+- Hodnota návratu po přehození je vždy nižší než cílové skóre.
+- Smazání historie resetuje i turnajová data navázaná na historii.
+- Nelze smazat hráče, který je v rozehrané hře nebo aktivní turnajové noci.
+- versionCode 12 / versionName 1.7.3

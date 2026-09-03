@@ -1,0 +1,7 @@
+Mölkky Companion v1.7.2
+- Přepracovaná grafika kuželek podle skutečných Mölkky kuželek.
+- Výrazný diagonální řez horní části.
+- Číslo je přímo na šikmé řezné ploše.
+- Dřevěné 3D stínování těla a řezné plochy.
+- Zachované větší horní ikony z v1.7.1.
+- versionCode 11 / versionName 1.7.2
