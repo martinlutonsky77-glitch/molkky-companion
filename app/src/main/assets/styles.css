@@ -395,3 +395,18 @@ html[data-theme="dark"] .pin.selected .molkky-pin-svg{filter:brightness(1.05) sa
   .pin{min-height:116px!important}
   .molkky-pin-svg{width:55px;height:88px}
 }
+
+
+/* v1.7.6 – 90° rotated Mölkky view: numbered cut face toward the player */
+.molkky-pin-svg.front-facing{
+  width:64px;
+  height:102px;
+  display:block;
+  overflow:visible;
+}
+.pin.selected .molkky-pin-svg.front-facing{
+  transform:translateY(-4px) scale(1.045);
+}
+@media(max-width:520px){
+  .molkky-pin-svg.front-facing{width:57px;height:92px}
+}

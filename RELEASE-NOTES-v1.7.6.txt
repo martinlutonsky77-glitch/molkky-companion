@@ -1,0 +1,21 @@
+Mölkky Companion v1.7.6
+
+Grafika kuželek
+- Kuželky jsou otočené o +90° kolem osy z, takže plocha s číslem směřuje přímo k hráči.
+- Render vychází z parametrického modelu: r=2,75 cm, H=15 cm, řez 45°, h0=12,25 cm, nižší strana 9,5 cm.
+- Po otočení je sklon řezu orientován do hloubky. Čelní ortografická projekce hrany řezu je kružnice; v UI je jen mírně perspektivně zploštěná.
+- Číslo je uprostřed řezné plochy.
+- Zachované dřevěné stínování a kresba letokruhů.
+
+Zachováno
+- 30 portrétů hráčů z dodané sady.
+- Nastavení, světlý/tmavý/system vzhled a barevné akcenty.
+- Velké horní ikony.
+- Kuželky/Body, Undo, automatický i ruční přechod hráče.
+- 3 minutí, vlastní pravidla hry, obnova rozehrané hry.
+- ELO, Head-to-Head, turnajová noc a GitHub updater.
+- Vtipná přeškrtnutá kuželka pro Minutí.
+
+Technicky
+- versionName 1.7.6
+- versionCode 15

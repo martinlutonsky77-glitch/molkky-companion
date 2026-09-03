@@ -1,7 +1,7 @@
 const UPDATE_CONFIG = {
   owner: "martinlutonsky77-glitch",
   repo: "molkky-companion",
-  currentVersion: "1.7.5"
+  currentVersion: "1.7.6"
 };
 
 
@@ -58,40 +58,92 @@ function playerIdentity(p, subtitle=""){
    standard diameter 5.5 cm, high side 15 cm, low side 9.5 cm, 45° cut.
    SVG silhouette follows those proportions instead of faking a cylinder lid. */
 function molkkyPinSvg(n){
-  return `<svg class="molkky-pin-svg" viewBox="0 0 72 112" role="img" aria-label="Kuželka ${n}">
+  /*
+    Mathematical basis:
+      r = 2.75 cm
+      H = 15.0 cm
+      alpha = 45°
+      h0 = H - r*tan(alpha) = 12.25 cm
+      h(x) = h0 + x*tan(alpha)
+
+    We rotate the pin +90° around the z-axis so the slope direction points
+    toward the viewer. In orthographic front projection the rim of the
+    45° cut projects as:
+      X = r*cos(t)
+      Z = h0 + r*sin(t)
+    i.e. a circle. The SVG adds only a small perspective squash for depth.
+  */
+  const r=2.75, H=15, alpha=Math.PI/4;
+  const h0=H-r*Math.tan(alpha);       // 12.25
+  const minH=h0-r*Math.tan(alpha);    // 9.5
+
+  const cx=36;
+  const faceRx=24;
+  const faceRy=21;                    // slight perspective squash of exact circular projection
+  const faceCy=30;
+  const bodyTop=faceCy+6;
+  const bodyBottom=114;
+
+  return `<svg class="molkky-pin-svg front-facing" viewBox="0 0 72 124" role="img" aria-label="Kuželka ${n}"
+      data-radius="${r}" data-height="${H}" data-min-height="${minH.toFixed(2)}" data-cut-angle="45" data-rotation-z="90">
     <defs>
       <linearGradient id="woodBody${n}" x1="0" x2="1">
-        <stop offset="0" stop-color="#8d5425"/>
-        <stop offset=".18" stop-color="#bd7836"/>
-        <stop offset=".43" stop-color="#edbe70"/>
-        <stop offset=".57" stop-color="#f4d18a"/>
-        <stop offset=".78" stop-color="#c67d37"/>
-        <stop offset="1" stop-color="#7c461d"/>
+        <stop offset="0" stop-color="#8c5121"/>
+        <stop offset=".16" stop-color="#b96f2d"/>
+        <stop offset=".38" stop-color="#e0a952"/>
+        <stop offset=".52" stop-color="#f1ca78"/>
+        <stop offset=".69" stop-color="#d69343"/>
+        <stop offset=".86" stop-color="#ab6328"/>
+        <stop offset="1" stop-color="#77401a"/>
       </linearGradient>
-      <linearGradient id="cutFace${n}" x1="0" y1="1" x2="1" y2="0">
-        <stop offset="0" stop-color="#d39a52"/>
-        <stop offset=".48" stop-color="#f3d493"/>
-        <stop offset="1" stop-color="#c27c39"/>
+      <radialGradient id="cutFace${n}" cx="43%" cy="38%" r="72%">
+        <stop offset="0" stop-color="#f6daa0"/>
+        <stop offset=".52" stop-color="#e8bd77"/>
+        <stop offset="1" stop-color="#bd7938"/>
+      </radialGradient>
+      <linearGradient id="bodyGlow${n}" x1="0" x2="1">
+        <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+        <stop offset=".48" stop-color="#fff" stop-opacity=".18"/>
+        <stop offset=".62" stop-color="#fff" stop-opacity=".06"/>
+        <stop offset="1" stop-color="#fff" stop-opacity="0"/>
       </linearGradient>
-      <filter id="pinShadow${n}" x="-40%" y="-30%" width="180%" height="180%">
-        <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000" flood-opacity=".22"/>
+      <filter id="pinShadow${n}" x="-50%" y="-30%" width="200%" height="190%">
+        <feDropShadow dx="0" dy="6" stdDeviation="4.5" flood-color="#000" flood-opacity=".24"/>
       </filter>
     </defs>
+
     <g filter="url(#pinShadow${n})">
-      <!-- body silhouette: lower cut edge at left, higher cut edge at right -->
-      <path d="M13 48 L59 16 L59 98 Q58 105 50 108 L22 108 Q14 105 13 98 Z"
-            fill="url(#woodBody${n})" stroke="#75431d" stroke-width="1.2"/>
-      <!-- subtle birch grain -->
-      <path d="M21 51C18 69 21 86 20 101M31 39C29 61 33 82 31 105M44 29C42 48 46 73 44 104M54 21C52 45 56 70 54 99"
-            fill="none" stroke="#855126" stroke-opacity=".22" stroke-width="1.3"/>
-      <path d="M18 47 C25 34 48 15 59 16 C53 28 27 53 13 48 Z"
-            fill="url(#cutFace${n})" stroke="#75431d" stroke-width="1.2"/>
-      <path d="M21 44C31 38 40 29 50 21M27 46C38 38 45 30 55 21"
-            fill="none" stroke="#9d6630" stroke-opacity=".28" stroke-width="1"/>
-      <text x="36" y="36" text-anchor="middle" dominant-baseline="middle"
-            transform="rotate(-27 36 36)"
+      <!-- Cylindrical body behind the cut face -->
+      <path d="M12 ${bodyTop} Q12 ${faceCy+14} 16 ${faceCy+19}
+               L16 ${bodyBottom-7} Q17 ${bodyBottom} 25 ${bodyBottom+2}
+               L47 ${bodyBottom+2} Q55 ${bodyBottom} 56 ${bodyBottom-7}
+               L56 ${faceCy+19} Q60 ${faceCy+14} 60 ${bodyTop} Z"
+            fill="url(#woodBody${n})" stroke="#704018" stroke-width="1.2"/>
+
+      <!-- Birch grain on cylindrical body -->
+      <path d="M21 49C19 67 22 89 21 111
+               M30 46C29 66 32 88 30 114
+               M42 45C40 65 44 91 42 114
+               M51 49C49 69 52 91 51 110"
+            fill="none" stroke="#7f4c22" stroke-opacity=".24" stroke-width="1.15"/>
+      <path d="M23 49C24 72 25 94 25 112 M38 46C38 72 39 96 39 114"
+            fill="none" stroke="url(#bodyGlow${n})" stroke-width="3"/>
+
+      <!-- The 45° cut face after +90° rotation around z, presented to viewer -->
+      <ellipse cx="${cx}" cy="${faceCy}" rx="${faceRx}" ry="${faceRy}"
+               fill="url(#cutFace${n})" stroke="#704018" stroke-width="1.35"/>
+
+      <!-- Growth rings on cut surface -->
+      <ellipse cx="${cx-2}" cy="${faceCy+1}" rx="${faceRx-6}" ry="${faceRy-5}"
+               fill="none" stroke="#a76a31" stroke-opacity=".22" stroke-width="1"/>
+      <ellipse cx="${cx-3}" cy="${faceCy+2}" rx="${faceRx-12}" ry="${faceRy-10}"
+               fill="none" stroke="#9a602b" stroke-opacity=".18" stroke-width="1"/>
+      <path d="M18 31 Q36 16 55 28 M18 37 Q36 23 55 34"
+            fill="none" stroke="#9a602b" stroke-opacity=".16" stroke-width="1"/>
+
+      <text x="${cx}" y="${faceCy+2}" text-anchor="middle" dominant-baseline="middle"
             font-family="system-ui,-apple-system,'Segoe UI',sans-serif"
-            font-size="${n>=10?19:22}" font-weight="900" fill="#27170d">${n}</text>
+            font-size="${n>=10?21:24}" font-weight="900" fill="#24140a">${n}</text>
     </g>
   </svg>`;
 }
@@ -222,7 +274,7 @@ function renderSettings(){
   $("autoAdvanceSetting").checked=!!appSettings.autoAdvance;
   $("vibrationSetting").checked=!!appSettings.vibration;
   $("soundSetting").checked=!!appSettings.sound;
-  $("appVersionText").textContent=`v${UPDATE_CONFIG.currentVersion} (build 14)`;
+  $("appVersionText").textContent=`v${UPDATE_CONFIG.currentVersion} (build 15)`;
   $("avatarSettingsList").innerHTML = players.length ? players.map(p=>`
     <div class="avatar-setting-row">
       ${playerIdentity(p)}
