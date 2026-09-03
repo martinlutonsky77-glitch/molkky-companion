@@ -1,7 +1,7 @@
 const UPDATE_CONFIG = {
   owner: "martinlutonsky77-glitch",
   repo: "molkky-companion",
-  currentVersion: "1.7.7"
+  currentVersion: "1.7.8"
 };
 
 
@@ -58,83 +58,80 @@ function playerIdentity(p, subtitle=""){
    standard diameter 5.5 cm, high side 15 cm, low side 9.5 cm, 45° cut.
    SVG silhouette follows those proportions instead of faking a cylinder lid. */
 function molkkyPinSvg(n){
-  const r=2.75, H=15.0, alpha=Math.PI/4, k=Math.tan(alpha), h0=H-r*k, seg=24;
-
+  const r=2.75, H=15.0, alpha=Math.PI/4, k=Math.tan(alpha), h0=H-r*k, seg=40;
   const rot=p=>[-p[1],p[0],p[2]];
   const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
   const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
   const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
   const norm=a=>{const q=Math.hypot(a[0],a[1],a[2])||1;return[a[0]/q,a[1]/q,a[2]/q];};
 
-  const cam=[0,-24,18], target=[0,0,7.0], up0=[0,0,1];
-  const fwd=norm(sub(target,cam));
-  const right=norm(cross(fwd,up0));
-  const up=norm(cross(right,fwd));
-  const focal=76, cx=36, cy=60;
+  // Camera above/front: preserves the real 45° cut as a clearly oblique face.
+  const cam=[0,-22,21.5], target=[0,0,7.3], up0=[0,0,1];
+  const fwd=norm(sub(target,cam)), right=norm(cross(fwd,up0)), up=norm(cross(right,fwd));
+  const focal=82, cx=36, cy=63;
 
   function project(p){
     const q=sub(rot(p),cam);
-    const X=dot(q,right), Y=dot(q,up), Z=dot(q,fwd);
+    const X=dot(q,right),Y=dot(q,up),Z=dot(q,fwd);
     const s=focal/Math.max(1,Z);
     return {x:cx+X*s,y:cy-Y*s,z:Z};
-  }
-  function woodShade(v,top=false){
-    const lo=top?[178,112,48]:[126,70,25];
-    const hi=top?[246,211,145]:[238,184,92];
-    const a=Math.max(0,Math.min(1,v));
-    const rgb=lo.map((x,i)=>Math.round(x+(hi[i]-x)*a));
-    return `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
   }
 
   const verts=[[0,0,0],[0,0,h0]];
   for(let i=0;i<seg;i++){
-    const t=2*Math.PI*i/seg;
-    const x=r*Math.cos(t), y=r*Math.sin(t), z=h0+k*x;
+    const t=2*Math.PI*i/seg, x=r*Math.cos(t), y=r*Math.sin(t), z=h0+k*x;
     verts.push([x,y,0],[x,y,z]);
   }
-
   const faces=[];
   for(let i=0;i<seg;i++){
     const j=(i+1)%seg,b0=2+2*i,t0=3+2*i,b1=2+2*j,t1=3+2*j;
-    faces.push({i:[0,b1,b0],kind:"bottom"});
-    faces.push({i:[b0,b1,t1],kind:"side"});
-    faces.push({i:[b0,t1,t0],kind:"side"});
-    faces.push({i:[1,t0,t1],kind:"top"});
+    faces.push({i:[b0,b1,t1],kind:"side"},{i:[b0,t1,t0],kind:"side"},{i:[1,t0,t1],kind:"top"});
   }
 
-  const light=norm([-0.5,-0.7,0.55]);
-  const polys=[];
+  const light=norm([-0.65,-0.72,0.52]), polys=[];
   for(const f of faces){
     const A=rot(verts[f.i[0]]),B=rot(verts[f.i[1]]),C=rot(verts[f.i[2]]);
     const nrm=norm(cross(sub(B,A),sub(C,A)));
     if(dot(nrm,fwd)>=0) continue;
     const pa=project(verts[f.i[0]]),pb=project(verts[f.i[1]]),pc=project(verts[f.i[2]]);
-    const d=(pa.z+pb.z+pc.z)/3;
-    const lit=0.45+0.55*Math.max(0,dot(nrm,light));
-    polys.push({
-      d,
-      kind:f.kind,
-      pts:`${pa.x.toFixed(2)},${pa.y.toFixed(2)} ${pb.x.toFixed(2)},${pb.y.toFixed(2)} ${pc.x.toFixed(2)},${pc.y.toFixed(2)}`,
-      fill:woodShade(f.kind==="top"?0.58+0.35*lit:0.25+0.72*lit,f.kind==="top")
-    });
+    const lit=0.34+0.66*Math.max(0,dot(nrm,light));
+    polys.push({d:(pa.z+pb.z+pc.z)/3,kind:f.kind,
+      pts:`${pa.x.toFixed(2)},${pa.y.toFixed(2)} ${pb.x.toFixed(2)},${pb.y.toFixed(2)} ${pc.x.toFixed(2)},${pc.y.toFixed(2)}`,lit});
   }
   polys.sort((a,b)=>b.d-a.d);
-  const mesh=polys.map(p=>`<polygon points="${p.pts}" fill="${p.fill}" stroke="${p.kind==="top"?"#6e3d17":"rgba(91,48,18,.22)"}" stroke-width="${p.kind==="top"?"0.65":"0.25"}"/>`).join("");
+  const mesh=polys.map(p=>{
+    const base=p.kind==="top"?0.74:0.47, shade=Math.max(0,Math.min(1,base+(p.lit-.5)*.45));
+    const lo=p.kind==="top"?[188,125,58]:[132,76,29], hi=p.kind==="top"?[249,216,151]:[237,182,91];
+    const rgb=lo.map((v,i)=>Math.round(v+(hi[i]-v)*shade));
+    return `<polygon points="${p.pts}" fill="rgb(${rgb[0]},${rgb[1]},${rgb[2]})"
+      stroke="${p.kind==="top"?"#74451f":"rgba(95,53,20,.22)"}" stroke-width="${p.kind==="top"?"0.55":"0.22"}"/>`;
+  }).join("");
 
-  const C=[0,0,h0], ex=norm([1,0,k]), ey=[0,1,0], s=1.2;
-  const pC=project(C), pX=project([C[0]+ex[0]*s,C[1]+ex[1]*s,C[2]+ex[2]*s]), pY=project([C[0]+ey[0]*s,C[1]+ey[1]*s,C[2]+ey[2]*s]);
-  const ax=(pX.x-pC.x)/s, ay=(pX.y-pC.y)/s, bx=(pY.x-pC.x)/s, by=(pY.y-pC.y)/s;
-  const mat=`matrix(${ax.toFixed(4)} ${ay.toFixed(4)} ${bx.toFixed(4)} ${by.toFixed(4)} ${pC.x.toFixed(2)} ${pC.y.toFixed(2)})`;
+  const pc=project([0,0,h0]);
 
-  return `<svg class="molkky-pin-svg model3d" viewBox="0 0 72 124" role="img" aria-label="Kuželka ${n}"
+  return `<svg class="molkky-pin-svg model3d wood-rich" viewBox="0 0 72 124" role="img" aria-label="Kuželka ${n}"
     data-radius="${r}" data-height="${H}" data-cut-angle="45" data-rotation-z="90">
-    <defs><filter id="meshShadow${n}" x="-45%" y="-30%" width="190%" height="190%"><feDropShadow dx="0" dy="5" stdDeviation="3.5" flood-color="#000" flood-opacity=".24"/></filter></defs>
-    <g filter="url(#meshShadow${n})">${mesh}</g>
-    <g transform="${mat}">
-      <text x="0" y="0" text-anchor="middle" dominant-baseline="central"
-        font-family="system-ui,-apple-system,'Segoe UI',sans-serif"
-        font-size="${n>=10?1.65:1.95}" font-weight="900" fill="#241309">${n}</text>
+    <defs>
+      <filter id="meshShadow${n}" x="-50%" y="-35%" width="200%" height="200%">
+        <feDropShadow dx="0" dy="6" stdDeviation="4.2" flood-color="#000" flood-opacity=".27"/>
+      </filter>
+      <filter id="grain${n}" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency=".025 .17" numOctaves="2" seed="${n*17}" result="noise"/>
+        <feColorMatrix in="noise" values="0.5 0 0 0 0.22  0 0.35 0 0 0.10  0 0 0.18 0 0.02  0 0 0 .34 0"/>
+      </filter>
+      <clipPath id="pinClip${n}"><rect x="9" y="7" width="54" height="111" rx="10"/></clipPath>
+    </defs>
+    <g filter="url(#meshShadow${n})">
+      ${mesh}
+      <g clip-path="url(#pinClip${n})" opacity=".48"><rect x="7" y="5" width="58" height="115" filter="url(#grain${n})"/></g>
+      <path d="M22 50C20 69 23 92 21 112M30 47C28 69 32 93 30 115M43 44C41 68 45 92 43 114M52 50C49 70 53 93 51 109"
+        fill="none" stroke="#7a431b" stroke-opacity=".24" stroke-width="1.15"/>
     </g>
+    <text x="${pc.x.toFixed(2)}" y="${(pc.y+1).toFixed(2)}"
+      text-anchor="middle" dominant-baseline="middle"
+      font-family="system-ui,-apple-system,'Segoe UI',sans-serif"
+      font-size="${n>=10?15.5:18}" font-weight="950"
+      fill="#23140a">${n}</text>
   </svg>`;
 }
 
@@ -264,7 +261,7 @@ function renderSettings(){
   $("autoAdvanceSetting").checked=!!appSettings.autoAdvance;
   $("vibrationSetting").checked=!!appSettings.vibration;
   $("soundSetting").checked=!!appSettings.sound;
-  $("appVersionText").textContent=`v${UPDATE_CONFIG.currentVersion} (build 16)`;
+  $("appVersionText").textContent=`v${UPDATE_CONFIG.currentVersion} (build 17)`;
   $("avatarSettingsList").innerHTML = players.length ? players.map(p=>`
     <div class="avatar-setting-row">
       ${playerIdentity(p)}

@@ -10,3 +10,5 @@ Mölkky Companion v1.7.7
 - Doplněná robustní spodní safe area pro Android gestickou navigaci a systémovou lištu.
 - Obsah, dialogy a spodní ovládací prvky se drží nad systémovou navigací.
 - viewport-fit=cover + env(safe-area-inset-*) + fallback pro starší WebView.
+
+- Finální grafika kuželek: výraznější textura dřeva, větší vzpřímená čísla, tvar stále z matematického modelu.

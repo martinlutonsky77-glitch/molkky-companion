@@ -461,3 +461,55 @@ dialog form{
   .app-shell{min-height:100vh}
   dialog{max-height:calc(100vh - 48px)}
 }
+
+/* v1.7.7 final visual: model-faithful pins, stronger wood grain, upright readable numbers */
+.molkky-pin-svg.model3d.wood-rich{width:72px;height:112px;display:block;overflow:visible}
+.pin{min-height:136px!important}
+.pin.selected .molkky-pin-svg.model3d.wood-rich{transform:translateY(-4px) scale(1.055)}
+@media(max-width:520px){
+  .molkky-pin-svg.model3d.wood-rich{width:63px;height:100px}
+  .pin{min-height:122px!important}
+}
+
+
+/* v1.7.8 – large pin tiles */
+.pins-grid{
+  gap:10px!important;
+}
+.pin{
+  min-height:154px!important;
+  padding:4px!important;
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:center!important;
+  overflow:hidden!important;
+  border-radius:20px!important;
+}
+.molkky-pin-svg.model3d.wood-rich{
+  width:94%!important;
+  height:146px!important;
+  max-width:104px!important;
+  display:block!important;
+  overflow:visible!important;
+  transform-origin:center bottom!important;
+}
+.pin.selected .molkky-pin-svg.model3d.wood-rich{
+  transform:translateY(-3px) scale(1.02)!important;
+}
+@media(max-width:520px){
+  .pins-grid{gap:8px!important}
+  .pin{min-height:142px!important;padding:2px!important}
+  .molkky-pin-svg.model3d.wood-rich{
+    width:96%!important;
+    height:134px!important;
+    max-width:94px!important;
+  }
+}
+
+/* keep number readable on larger pin */
+.molkky-pin-svg.model3d.wood-rich text{
+  paint-order:stroke fill;
+  stroke:#f2c979;
+  stroke-opacity:.14;
+  stroke-width:.35px;
+}

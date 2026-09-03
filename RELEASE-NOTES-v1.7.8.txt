@@ -1,0 +1,20 @@
+Mölkky Companion v1.7.8
+
+UI:
+- Kuželky jsou výrazně zvětšené a využívají téměř celou plochu dlaždice.
+- Zachované proporce skutečné Mölkky kuželky z matematického modelu.
+- Čísla zůstávají velká, rovná a čitelná.
+- Zachovaná struktura dřeva, výběr kuželky i zvýraznění aktivní dlaždice.
+- Upravené mezery mezi dlaždicemi pro lepší využití displeje.
+
+Zachováno:
+- safe-area ochrana spodní části obrazovky,
+- portréty hráčů,
+- světlý/tmavý/system režim a barevné akcenty,
+- Kuželky/Body, Undo, obnova hry,
+- minutí, ELO, Head-to-Head, turnajová noc,
+- updater a Nastavení.
+
+Technicky:
+- versionCode 17
+- versionName 1.7.8
